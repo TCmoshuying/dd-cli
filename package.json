@@ -1,0 +1,28 @@
+{
+  "name": "dingding-data",
+  "version": "0.0.1",
+  "author": "HUHU<bianlongting@dianwoda.com>",
+  "description": "1",
+  "main": "index.js",
+  "scripts": {
+    "fix": "tslint --fix -c ./tslint.json 'src/**/*{.ts,.tsx}'"
+  },
+  "dependencies": {
+    "@types/node": "^10.5.2",
+    "axios": "^0.18.0"
+  },
+  "devDependencies": {
+    "tslint": "^5.18.0",
+    "typescript": "^3.5.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "1"
+  },
+  "keywords": [
+    "钉钉",
+    "dingding",
+    "dd"
+  ],
+  "license": "ISC"
+}

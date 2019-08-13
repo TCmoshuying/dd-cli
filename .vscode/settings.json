@@ -1,0 +1,48 @@
+{
+    "editor.tabSize": 2,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.tslint": true
+    },
+    "workbench.colorTheme": "Material Theme",
+    "window.zoomLevel": 0,
+    "liveServer.settings.donotShowInfoMsg": true,
+    "git.enableSmartCommit": true,
+    "editor.minimap.enabled": false,
+    "editor.renderWhitespace": "all",
+    "editor.renderControlCharacters": true,
+    "breadcrumbs.enabled": true,
+    "workbench.activityBar.visible": true,
+    "eslint.autoFixOnSave": true,
+    "eslint.validate": [
+        "javascript",
+        {
+            "language": "vue",
+            "autoFix": true
+        },
+        "html",
+        "vue"
+    ],
+    "explorer.confirmDelete": false,
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "sync.gist": "1f4965b7e9c04cbc75cae4a5b04d2f90",
+    "files.associations": {
+        "*.cjson": "jsonc",
+        "*.wxss": "css",
+        "*.wxs": "javascript"
+    },
+    "emmet.includeLanguages": {
+        "wxml": "html"
+    },
+    "minapp-vscode.disableAutoConfig": true,
+    "sync.removeExtensions": false,
+    "workbench.iconTheme": "vscode-icons",
+    "sync.forceUpload": true,
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+}
