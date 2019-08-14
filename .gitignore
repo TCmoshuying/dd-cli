@@ -9,3 +9,4 @@
 *_REMOTE_*.txt
 node_modules
 lib
+config

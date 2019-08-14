@@ -2,15 +2,9 @@
   "compileOnSave": true,
   "compilerOptions": {
     "target": "es5",
-    "lib": [
-      "es6", "dom"
-    ],
-    "types": [
-      "node"
-    ],
-    "typeRoots": [
-      "./types", "node_modules/@types"
-    ],
+    "lib": ["es6", "dom"],
+    "types": ["node"],
+    "typeRoots": ["./types", "node_modules/@types"],
     "outDir": "./lib",
     "sourceMap": true,
     "module": "commonjs",
@@ -21,7 +15,5 @@
     "declaration": true,
     "suppressImplicitAnyIndexErrors": true
   },
-  "include": [
-    "./src/**/*",
-  ]
+  "include": ["./src/**/*"]
 }

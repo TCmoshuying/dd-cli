@@ -17,7 +17,10 @@
     "object-literal-sort-keys": false,
     "no-unused-variable": false,
     "trailing-comma": false,
-    "no-shadowed-variable": false
+    "no-shadowed-variable": false,
+    "curly": true,
+    "no-return-await":true 
+
   },
   "rulesDirectory": []
 }
