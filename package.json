@@ -5,7 +5,9 @@
   "description": "1",
   "main": "index.js",
   "scripts": {
-    "fix": "tslint --fix -c ./tslint.json 'src/**/*{.ts,.tsx}'"
+    "fix": "tslint --fix -c ./tslint.json 'src/**/*{.ts,.tsx}'",
+    "dev":"node ./lib/index.js",
+    "start":"npx tsc"
   },
   "dependencies": {
     "@types/node": "^10.5.2",
