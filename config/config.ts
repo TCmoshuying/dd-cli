@@ -34,6 +34,10 @@ export  default {
       url: 'attendance/list?access_token=',
       keyName: 'WeekData'
     },
+    getMoonData: {
+      url: 'attendance/list?access_token=',
+      keyName: 'MoonData'
+    },
     getKaoqingLists: {
       url: 'attendance/list?access_token='
     }

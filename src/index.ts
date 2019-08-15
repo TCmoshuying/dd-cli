@@ -1,6 +1,7 @@
 import axios from 'axios'
 import config from '../config/config'
-import Moment = require('moment')
+// tslint:disable-next-line: no-var-requires
+const Moment = require('moment')
 import { getFnName, delDir, checkDirExist, getDoubleIndex } from './tool'
 
 const { log } = console
@@ -11,6 +12,8 @@ class DDdata {
   private Secret: string
   public data = {userIdList: [], employee: []}
   public cooldata = {dimissionList: [], employee: []}
+  public weekdata = []
+  public moondata = []
   public daliyData = []
   private AccessToken: string
   /**
@@ -22,6 +25,7 @@ class DDdata {
     this.Key = key
     this.Secret = Secret
     this.refreshen()
+    this.getAccessTonken()
   }
   /**
    * 启动时刷新数据
@@ -32,6 +36,8 @@ class DDdata {
     await this.getdimission()
     await this.getemployee()
     await this.gettoDayData()
+    this.weekdata = await this.getWeekData()
+    this.moondata = await this.getMoonData()
   }
   /**
    * 不传参时,默认以最高速度获取在职员工id信息
@@ -153,8 +159,8 @@ class DDdata {
     const time = new Date().toJSON().substring(0, 10)
     const fromtime = time + ' 00:00:00'
     const totime = time + ' 23:59:59'
-    const Ltemp = []
-    this.daliyData = await this.getKaoqingLists(list, this.data.employee, fromtime, totime, offsetis, limitis)
+    const Ltemp = await this.getKaoqingLists(list, this.data.employee, fromtime, totime, offsetis, limitis)
+    this.daliyData = Ltemp
     log(config.apiList.gettoDayData.keyName, config.functiondone)
     return Ltemp
   }
@@ -176,17 +182,41 @@ class DDdata {
     const lastWeek2 = new Moment().day(-((num * 7) - 7)).format('YYYY-MM-DD').toString()
     const time1 = '' + lastWeek1 + ' 00:00:00'
     const time2 = '' + lastWeek2 + ' 23:59:59'
-    const Ltemp = []
-    this.daliyData = await this.getKaoqingLists(list, this.data.employee, time1, time2, offsetis, limitis)
+    let Ltemp = []
+    Ltemp = await this.getKaoqingLists(list, this.data.employee, time1, time2, offsetis, limitis)
     log(config.apiList.getWeekData.keyName, config.functiondone)
     return Ltemp
   }
-  async getSimpleGroups(token: any) {
-    const { data } = await axios(
-      `${mainUrl}/topapi/smartwork/hrm/employee/queryonjob?access_token=${token}`)
-    if (data) { log(`SimpleGroups is updata`) }
-    log(data)
-    return data
+  /**
+   * 返回上num月的数据,不传数据默认获取上月在职员工的打卡数据(不会解析离职员工信息,返回'已离职')
+   * @param num 获取上num月的数据,传或不传为上月数据,传2位上第二月数据
+   * @param offsetis 分页值
+   * @param limitis 分页数据大小
+   * @param list 员工id:名字信息表
+   * @param token 秘钥
+   */
+  async getMoonData(num?: number, offsetis?: number, limitis?: number, list?: any[], token?: string) {
+    let day = 1
+    num = num || 1
+    const Ltemp = []
+    limitis = limitis || 50
+    offsetis = offsetis || 0
+    list = list || this.data.userIdList
+    token = token || this.AccessToken
+    const year = new Moment().format('YYYY').toString()
+    const month = Number(new Moment().format('MM').toString()) - num - 1
+    const lastMoon1 = new Moment([year, month, day]).format('YYYY-MM-DD')
+    const lastMoonDay = new Moment(lastMoon1).endOf('month').format('DD')
+    const time1 = new Moment([year, month, day]).format('YYYY-MM-DD') + ' 00:00:00'
+    const time2 = new Moment([year, month, day]).add(1, 'days').format('YYYY-MM-DD') + ' 23:59:59'
+    while (true) {
+      const temp = await this.getKaoqingLists(list, this.data.employee, time1, time2, offsetis, limitis)
+      Ltemp.push(temp)
+      day++
+      if (day === Number(lastMoonDay)) { break }
+    }
+    log(config.apiList.getMoonData.keyName, config.functiondone)
+    return Ltemp
   }
   /**
    * 获取time1和time2之间的用户考勤信息,time1和time2最长间隔7天
@@ -229,6 +259,7 @@ class DDdata {
         })
         const temp = {
           name: Lname.name,
+          userId: el.userId,
           branch: Lname.branch,
           checkType: el.checkType,
           timeResult: el.timeResult,
@@ -243,6 +274,13 @@ class DDdata {
       if (!data.hasMore && start > useridList.length) { break }
     }
     return Ltemp
+  }
+  async getSimpleGroups(token: any) {
+    const { data } = await axios(
+      `${mainUrl}/topapi/smartwork/hrm/employee/queryonjob?access_token=${token}`)
+    if (data) { log(`SimpleGroups is updata`) }
+    log(data)
+    return data
   }
   /**
    * 立即获取秘钥并保存在对象中
