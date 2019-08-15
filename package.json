@@ -8,7 +8,7 @@
     "fix": "tslint --fix -c ./tslint.json 'src/**/*{.ts,.tsx}'",
     "dev": "node ./lib/src/index.js",
     "start": "npx tsc",
-    "serve":"node ./lib/src/main.js"
+    "serve": "node ./lib/src/main.js"
   },
   "dependencies": {
     "@types/node": "^10.5.2",
@@ -17,6 +17,8 @@
   },
   "devDependencies": {
     "@types/redis": "^2.8.13",
+    "koa": "^2.7.0",
+    "koa-router": "^7.4.0",
     "tslint": "^5.18.0",
     "typescript": "^3.5.3"
   },
