@@ -1,10 +1,11 @@
+import * as fs from 'fs'
 import axios from 'axios'
 import * as redis from 'redis'
 import config from '../config/config'
 import {
   DDTonken
 } from './index.interface'
-import { delDir, checkDirExist, getDoubleIndex } from './tool'
+import { getFnName, delDir, checkDirExist, getDoubleIndex } from './tool'
 const { log } = console
 const mainUrl = config.mainUrl
 class DDdata {
@@ -18,12 +19,13 @@ class DDdata {
     dimissionList: [],
     employee:  []
   }
+  private daliyData = []
   private check = {
     userIdListLength: 1,
     dimissionListLength: 1
   }
   private AccessToken: string
-  private client = redis.createClient(config.redisPort, config.redisHost)
+  private client = redis.createClient(config.redis.Port, config.redis.Host)
   /**
    * 构建主要参数
    * @param {string} appKey
@@ -32,34 +34,15 @@ class DDdata {
   constructor(key: string, Secret: string) {
     this.Key = key
     this.Secret = Secret
-    // this.client = this.RedisCli();
-    // this.client.quit();
-    // this.unlock();
     this.refreshen()
-    // this.getAccessTonken();
   }
   async refreshen() {
-    this.getToken()
-    setTimeout(() => {
-    this.getStatusList()
-    this.getdimission()
-    setTimeout(() => {
-      this.setStatusList('statusList')
-      this.setdimission('dimission')
-    }, 2500)
-    setTimeout(() => {
-      this.getemployee(this.data.userIdList, this.data.employee)
-    }, 2700)
-    // const check =  setInterval(() => {
-    //   this.setStatusList('statusList')
-    //   this.setdimission('dimission')
-    //   if (this.data.userIdList.length >= this.check.userIdListLength ) {
-    //       // this.getemployee(this.data.userIdList, this.data.employee, 200);
-    //       // this.getemployee(200, this.cooldata.dimissionList, this.cooldata.employee);
-    //   clearInterval(check)
-    //     }
-    //   }, 500)
-   }, 400)
+    await this.clearRedis()
+    await this.getToken()
+    await this.getStatusList()
+    await this.getemployee()
+    // const data = await this.client.get('temp')
+    // log(data)
   }
   /**
    * 获取在职员工id信息
@@ -69,57 +52,33 @@ class DDdata {
    * @param sizeis 单页数据大小
    * @param token 秘钥
    */
-  async getStatusList(speed ?: number, Substate ?: string, offsetis ?: string|number,
-                      sizeis ?: string|number, token ?: string, keyName?: string) {
-    speed = speed || 200
+  async getStatusList( Substate ?: string, offsetis ?: string|number, sizeis ?: string|number, token ?: string) {
     sizeis = sizeis || 20
     offsetis = offsetis || 0
-    keyName = keyName || 'statusList'
-    Substate = Substate || config.apiList.status_list
+    Substate = Substate || config.apiList.getStatusList.status_list
     token = token || this.AccessToken
     const userIdList = new Array()
     const Lclient = this.client
-    // this.data.userIdList
-    this.client.smembers(keyName, (err, res) => {
-      if (err) {log(err) }
-      // 如果之前存过数据
-      if (res.length >= 1) {
-        this.client.del(keyName, (err, res) => {
-          if (err) { log(err) }
-          start()
+    while (true) {
+      const { data } = await axios({
+        method: 'post',
+        url: `${mainUrl}${config.apiList.getStatusList.url}${token}`,
+        data: {status_list: Substate, offset: offsetis, size: sizeis}
+      })
+      offsetis = data.result.next_cursor
+      if (data.result.next_cursor !== undefined) {
+        data.result.data_list.forEach((el: any) => {
+          userIdList.push(el)
+          Lclient.sadd(config.apiList.getStatusList.keyName, el)
         })
       } else {
-        start()
+        log(config.apiList.getStatusList.keyName + config.functiondone)
+        this.data.userIdList = userIdList
+        break
       }
-      function start() {
-        const statusList = setInterval(async () => {
-          const { data } = await axios({
-            method: 'post',
-            url: `${mainUrl}${config.apiList.getStatusList}${token}`,
-            data: {status_list: Substate, offset: offsetis, size: sizeis}
-          })
-          offsetis = data.result.next_cursor
-          if (data.result.next_cursor !== undefined) {
-            data.result.data_list.forEach((el: any) => {
-              userIdList.push(el)
-              Lclient.sadd(keyName, el)
-            })
-          } else {
-            log(keyName + config.functiondone)
-            clearInterval(statusList)
-            // return userIdList;
-          }
-        }, speed)
-      }
-    })
+    }
   }
 
-  setStatusList(keyName: string) {
-    this.client.smembers(keyName, (err, res) => {
-      if (err) {log(err) }
-      this.data.userIdList = res
-    })
-  }
   /**
    * 获取离职员工id信息
    * @param speed 获取速度
@@ -127,104 +86,93 @@ class DDdata {
    * @param sizeis 单词取得数据大小
    * @param token 秘钥
    */
-  async getdimission(speed?: number, offsetis ?: string|number,
-                     sizeis ?: string|number, token?: string, keyName?: string) {
-    speed = speed || 200
+  async getdimission(offsetis ?: string|number, sizeis ?: string|number, token?: string) {
     sizeis = sizeis || 50
     offsetis = offsetis || 0
     token = token || this.AccessToken
-    keyName = keyName || 'dimission'
     const dimissionList = this.data.userIdList
     const Lclient = this.client
-    this.client.smembers(keyName, (err, res) => {
-      if (err) { log(err) }
-      if (res.length >= 1) {
-        this.client.del(keyName, (err, res) => {
-          if (err) {log(err) }
-          start()
+    while (true) {
+      const {data} = await axios({
+        method: 'post',
+        url: `${mainUrl}${config.apiList.getdimission.url}${token}`,
+        data: {offset: offsetis, size: sizeis}
+      })
+      offsetis = data.result.next_cursor
+      if (data.result.next_cursor !== undefined) {
+        data.result.data_list.forEach((el: any) => {
+          dimissionList.push(el)
+          Lclient.sadd(config.apiList.getdimission.keyName, el)
         })
       } else {
-        start()
+        log(config.apiList.getdimission.keyName + config.functiondone)
+        this.cooldata.dimissionList = dimissionList
+        return true
+        // break
       }
-    })
-    function start() {
-      const getdimissionList = setInterval(async () => {
-        const {data} = await axios({
-          method: 'post',
-          url: `${mainUrl}/topapi/smartwork/hrm/employee/querydimission?access_token=${token}`,
-          data: {offset: offsetis, size: sizeis}
-        })
-        offsetis = data.result.next_cursor
-        if (data.result.next_cursor !== undefined) {
-          data.result.data_list.forEach((el: any) => {
-            dimissionList.push(el)
-            Lclient.sadd(keyName, el)
-          })
-        } else {
-          log(keyName + config.functiondone)
-          clearInterval(getdimissionList)
-        }
-      }, speed)
     }
   }
-  setdimission(keyName: string) {
-    this.client.smembers(keyName, (err, res) => {
-      if (err) {log(err) }
-      this.cooldata.dimissionList = res
-    })
-  }
 
-  async getemployee( list ?: { [x: string]: any; }, redata ?: { [x: string]: any; },
-                     speed ?: number, token ?: string, keyName ?: string) {
-    speed = speed || 200
-    keyName = keyName || 'employee'
+  /**
+   * 返回员工部门职位,姓名和id信息
+   * @param list 员工id列表
+   * @param redata 返回数据,会被修改
+   * @param token 秘钥
+   */
+  async getemployee( list ?: { [x: string]: any; }, redata ?: { [x: string]: any; }, token ?: string) {
     token = token || this.AccessToken
     list = list || this.data.userIdList
-    const fieldFilter = config.apiList.fieldFilter
+    redata = redata || this.data.employee
+    const api = config.apiList.getemployee
+    const fieldFilter = api.fieldFilter
     const Lclient = this.client
-    this.client.smembers(keyName, (err, res) => {
-      if (err) {log(err) }
-      log(list.length)
-      log(res.length)
-      if (res.length === list.length ) { return }
-      // if (res.length >= 1 && res.length < list.length) {
-      //   this.client.del(keyName, (err, res) => {
-      //     if (err) {log(err) }
-      //     start()
-      //   })
-      // } else {
-      //   start()
-      // }
-    })
-    function start() {
-      let querix = 0
-      const getemployeeInfo = setInterval(() => {
-        axios({
-          method: 'post',
-          url: `${mainUrl}/topapi/smartwork/hrm/employee/list?access_token=${token}`,
-          data: {
-            userid_list: list[querix],
-            field_filter_list : fieldFilter,
-          }
-        }).then((res) => {
-          const data = res.data
-          const pushData = {
-            name: data.result[0].field_list[0].value,
-            userid: data.result[0].userid,
-            branch: data.result[0].field_list[3].value,
-            place: data.result[0].field_list[1].value
-          }
-          Lclient.sadd(keyName, JSON.stringify(pushData))
-          log(data.result[0].field_list[0].value + ':employeeLists is updata')
-        })
-        querix++
-        if (querix === list.length) {
-          clearInterval(getemployeeInfo)
+    for (let querix = 0; querix >= 0; querix++) {
+      const {data} = await axios({
+        method: 'post',
+        url: `${mainUrl}${api.url}${token}`,
+        data: {
+          userid_list: list[querix],
+          field_filter_list : fieldFilter,
         }
-      }, speed)
+      })
+      const pushData = {
+        name: data.result[0].field_list[0].value,
+        userid: data.result[0].userid,
+        branch: data.result[0].field_list[3].value,
+        place: data.result[0].field_list[1].value
+      }
+      this.data.employee.push(pushData)
+      Lclient.sadd(api.keyName, JSON.stringify(pushData))
+      log(data.result[0].field_list[0].value + ':' + api.keyName + ' is updata')
+      if (querix === list.length) {
+        log(this.data.employee[0])
+        break
+     }
     }
   }
+  async gettoDayData(offsetis?: number, limitis?: number, list?: any[], token?: string) {
+    offsetis = offsetis || 0
+    limitis = limitis || 50
+    list = list || this.daliyData
+    token = token || this.AccessToken
+    const time = new Date().toJSON().substring(0, 10)
+    const fromtime = time + ' 00:00:00'
+    const totime = time + '23:59:59'
+    while (true) {
+      const {data} = await axios({
+        method: 'post',
+        url: config.apiList.getTodayData.url,
+        data: {
+          workDateFrom: fromtime,
+          workDateTo: totime,
+          userIdList: list,    // 必填，与offset和limit配合使用
+          offset: offsetis,    // 必填，第一次传0，如果还有多余数据，下次传之前的offset加上limit的值
+          limit: limitis,     // 必填，表示数据条数，最大不能超过50条
+        }
+      })
 
+    }
+  }
   async getSimpleGroups(token: any) {
     const { data } = await axios(
       `${mainUrl}/topapi/smartwork/hrm/employee/queryonjob?access_token=${token}`)
@@ -233,10 +181,6 @@ class DDdata {
     return data
   }
 
-RedisCli(lock ?: boolean) {
-    lock = lock || true
-    return redis.createClient(config.redisPort, config.redisHost)
-  }
   /**
    * 立即获取秘钥并保存在对象中
    */
@@ -263,18 +207,23 @@ RedisCli(lock ?: boolean) {
       return data
     }, (2 * 60 * 60 * 1000) - 5000)
   }
-  // reRedisSmembersKey(keyName, data) {
-  //   this.client.smembers(keyName, (err, res) => {
-  //     if (err) {log(err); }
-  //     data = res;
-  //   });
-  // }
-  unlock() {
-      delDir('./lib/lock/')
-    }
+  async clearRedis() {
+    const temp = await this.client.del(
+      config.apiList.getStatusList.keyName,
+      config.apiList.getdimission.keyName,
+      config.apiList.getemployee.keyName)
+    log(temp)
+    return temp
+  }
+  async redisOpen() {
+    return redis.createClient(config.redis.Port, config.redis.Host)
+  }
+  async redisClose() {
+    return this.client.quit()
+  }
   destroy() {
-      return null
-    }
+    return null
+  }
 }
 
 const dd = new DDdata(config.appkey, config.appsecret)
