@@ -2,6 +2,9 @@ import * as Koa from 'koa'
 import * as Router from 'koa-router'
 // tslint:disable-next-line: import-spacing
 import * as bodyParser  from 'koa-bodyparser'
+import log4js = require('log4js')
+log4js.configure(config.loggerConfig1)
+const logger = log4js.getLogger()
 import DDdata from './index'
 import config from '../config/config'
 const app = new Koa()
@@ -43,28 +46,28 @@ const router = new Router()
 const {log} = console
 const dd =  new DDdata(config.appkey, config.appsecret)
 router.get('/', async (ctx) => {
-  log(ctx.method + ' | ' + 'main' + ' | ' + ctx.ip + ' | ' + ctx.url)
+  logger.info(ctx.method + ' | ' + 'main' + ' | ' + ctx.ip + ' | ' + ctx.url)
   ctx.body = 'hello world'
 })
 
 router.get('/gettoDayData', (ctx) => {
-  log(ctx.method + ' | ' + 'gettoDayData' + ' | ' + ctx.ip + ' | ' + ctx.url)
+  logger.info(ctx.method + ' | ' + 'gettoDayData' + ' | ' + ctx.ip + ' | ' + ctx.url)
   ctx.body = dd.daliyData
 })
 
 router.post('/posttoDayData', async (ctx) => {
-  log(ctx.method + ' | ' + 'posttoDayData' + ' | ' + ctx.ip + ' | ' + ctx.url)
+  logger.info(ctx.method + ' | ' + 'posttoDayData' + ' | ' + ctx.ip + ' | ' + ctx.url)
   ctx.body = await dd.gettoDayData()
 })
 
 router.get('/getWeekData', (ctx) => {
-  log(ctx.method + ' | ' + 'getWeekData' + ' | ' + ctx.ip + ' | ' + ctx.url)
+  logger.info(ctx.method + ' | ' + 'getWeekData' + ' | ' + ctx.ip + ' | ' + ctx.url)
   ctx.body = dd.weekdata
 })
 
 router.post('/postWeekData', async (ctx) => {
   // ctx.query.num = ctx.query.num || 1
-  log(ctx.method + ' | ' + 'postWeekData' + ' | ' + ctx.ip + ' | ' + ctx.url + ' | ' + ctx.request.body.num)
+  logger.info(ctx.method + ' | ' + 'postWeekData' + ' | ' + ctx.ip + ' | ' + ctx.url + ' | ' + ctx.request.body.num)
   if (ctx.request.body.num === undefined) {
     ctx.body = ''
   } else {
@@ -73,13 +76,13 @@ router.post('/postWeekData', async (ctx) => {
 })
 
 router.get('/getMoonData', (ctx) => {
-  log(ctx.method + ' | ' + 'getMoonData' + ' | ' + ctx.ip + ' | ' + ctx.url)
+  logger.info(ctx.method + ' | ' + 'getMoonData' + ' | ' + ctx.ip + ' | ' + ctx.url)
   ctx.body = dd.moondata
 })
 
 router.post('/postMoonData', async (ctx) => {
   // ctx.query.num = ctx.query.num || 1
-  log(ctx.method + ' | ' + 'postMoonData' + ' | ' + ctx.ip + ' | ' + ctx.url + ' | ' + ctx.request.body.num)
+  logger.info(ctx.method + ' | ' + 'postMoonData' + ' | ' + ctx.ip + ' | ' + ctx.url + ' | ' + ctx.request.body.num)
   if (ctx.request.body.num === undefined) {
     ctx.body = ''
   } else {
@@ -88,17 +91,17 @@ router.post('/postMoonData', async (ctx) => {
 })
 
 router.get('/getdimission', (ctx) => {
-  log(ctx.method + ' | ' + 'getdimission' + ' | '  + ctx.ip + ' | ' + ctx.url)
+  logger.info(ctx.method + ' | ' + 'getdimission' + ' | '  + ctx.ip + ' | ' + ctx.url)
   ctx.body = dd.cooldata.employee
 })
 
 router.get('/getStatusList', (ctx) => {
-  log(ctx.method + ' | ' + 'getStatusList' + ' | '  + ctx.ip + ' | ' + ctx.url)
+  logger.info(ctx.method + ' | ' + 'getStatusList' + ' | '  + ctx.ip + ' | ' + ctx.url)
   ctx.body = dd.data.employee
 })
 
 app.use(router.routes())
 
-app.listen(80)
+app.listen(config.listen)
 
-log(80)
+logger.info(config.listen)

@@ -3,13 +3,9 @@ export  default {
   appkey: min.appkey, // 钉钉h5的apopkey
   appsecret: min.appsecret, // 钉钉h5的appsecret
   mainUrl: min.mainUrl, // 钉钉的后台api链接
-  // listen: 80, // 开启服务器时的监听地址,建议80
+  listen: 80, // 开启服务器时的监听地址,建议80
   updateAccessTokenTime: (2 * 3600 * 1000) - 2000, // AccessTonken更新时间,最好小于2小时
   updateUserListTime: (24 * 3600 * 1000), // 员工数据更新时间,固定设置为24小时,每日零点更新
-  redis: {
-    Port: 6379,
-    Host: '127.0.0.1',
-  },
   functiondone: ' done',
   apiList: {
     getStatusList: {
