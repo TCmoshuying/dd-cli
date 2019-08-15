@@ -33,11 +33,11 @@ class DDdata {
   async refreshen() {
     await this.getToken()
     await this.getStatusList()
-    await this.getdimission()
     await this.getemployee()
     await this.gettoDayData()
     await this.getWeekData()
     await this.getMoonData()
+    await this.getdimission()
     await this.getemployee(this.cooldata.dimissionList, this.cooldata.employee)
   }
   /**
