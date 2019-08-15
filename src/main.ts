@@ -56,8 +56,8 @@ router.get('/getWeekData', (ctx) => {
 
 router.post('/getWeekData', async (ctx) => {
   ctx.query.num = ctx.query.num || 1
+  ctx.body = await dd.getWeekData(ctx.query.num)
   log(ctx.method + ' | ' + 'getWeekData' + ' | ' + ctx.ip + ' | ' + ctx.url + ctx.query.num)
-  ctx.body = dd.getWeekData(ctx.query.num)
 })
 
 router.get('/getMoonData', (ctx) => {
@@ -65,10 +65,10 @@ router.get('/getMoonData', (ctx) => {
   ctx.body = dd.moondata
 })
 
-router.post('/getMoonData', (ctx) => {
+router.post('/getMoonData', async (ctx) => {
   ctx.query.num = ctx.query.num || 1
+  ctx.body = await dd.getMoonData(ctx.query.num)
   log(ctx.method + ' | ' + 'getMoonData' + ' | ' + ctx.ip + ' | ' + ctx.url + ctx.query.num)
-  ctx.body = dd.getMoonData(ctx.query.num)
 })
 
 router.get('/getdimission', (ctx) => {
