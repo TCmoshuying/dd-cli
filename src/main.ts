@@ -1,5 +1,6 @@
 import * as Koa from 'koa'
 import * as Router from 'koa-router'
+// tslint:disable-next-line: import-spacing
 import * as bodyParser  from 'koa-bodyparser'
 import DDdata from './index'
 import config from '../config/config'
@@ -51,6 +52,11 @@ router.get('/gettoDayData', (ctx) => {
   ctx.body = dd.daliyData
 })
 
+router.post('/posttoDayData', async (ctx) => {
+  log(ctx.method + ' | ' + 'posttoDayData' + ' | ' + ctx.ip + ' | ' + ctx.url)
+  ctx.body = await dd.gettoDayData()
+})
+
 router.get('/getWeekData', (ctx) => {
   log(ctx.method + ' | ' + 'getWeekData' + ' | ' + ctx.ip + ' | ' + ctx.url)
   ctx.body = dd.weekdata
@@ -58,7 +64,7 @@ router.get('/getWeekData', (ctx) => {
 
 router.post('/postWeekData', async (ctx) => {
   // ctx.query.num = ctx.query.num || 1
-  log(ctx.method + ' | ' + 'getWeekData' + ' | ' + ctx.ip + ' | ' + ctx.url + ' | ' + ctx.request.body.num)
+  log(ctx.method + ' | ' + 'postWeekData' + ' | ' + ctx.ip + ' | ' + ctx.url + ' | ' + ctx.request.body.num)
   if (ctx.request.body.num === undefined) {
     ctx.body = ''
   } else {
@@ -73,7 +79,7 @@ router.get('/getMoonData', (ctx) => {
 
 router.post('/postMoonData', async (ctx) => {
   // ctx.query.num = ctx.query.num || 1
-  log(ctx.method + ' | ' + 'getMoonData' + ' | ' + ctx.ip + ' | ' + ctx.url + ' | ' + ctx.request.body.num)
+  log(ctx.method + ' | ' + 'postMoonData' + ' | ' + ctx.ip + ' | ' + ctx.url + ' | ' + ctx.request.body.num)
   if (ctx.request.body.num === undefined) {
     ctx.body = ''
   } else {

@@ -1,4 +1,6 @@
 import axios from 'axios'
+// tslint:disable-next-line: no-var-requires
+const CronJob = require('cron').CronJob
 import config from '../config/config'
 // tslint:disable-next-line: no-var-requires
 const Moment = require('moment')
@@ -26,6 +28,7 @@ class DDdata {
     this.Secret = Secret
     this.refreshen()
     this.getAccessTonken()
+    this.job()
   }
   /**
    * 启动时刷新数据
@@ -199,7 +202,7 @@ class DDdata {
    * @param token 秘钥
    */
   async getMoonData(num?: number, offsetis?: number, limitis?: number, list?: any[], token?: string) {
-    let day = 1
+    const day = 1
     num = num || 1
     const Ltemp = []
     limitis = limitis || 50
@@ -210,13 +213,11 @@ class DDdata {
     const month = Number(new Moment().format('MM').toString()) - num - 1
     const lastMoon1 = new Moment([year, month, day]).format('YYYY-MM-DD')
     const lastMoonDay = new Moment(lastMoon1).endOf('month').format('DD')
-    const time1 = new Moment([year, month, day]).format('YYYY-MM-DD') + ' 00:00:00'
-    const time2 = new Moment([year, month, day]).add(1, 'days').format('YYYY-MM-DD') + ' 23:59:59'
-    while (true) {
+    for (let day = 1; day < Number(lastMoonDay); day++) {
+      const time1 = new Moment([year, month, day]).format('YYYY-MM-DD') + ' 00:00:00'
+      const time2 = new Moment([year, month, day]).add(1, 'days').format('YYYY-MM-DD') + ' 23:59:59'
       const temp = await this.getKaoqingLists(list, this.data.employee, time1, time2, offsetis, limitis)
       Ltemp.push(temp)
-      day++
-      if (day === Number(lastMoonDay)) { break }
     }
     this.moondata = Ltemp
     log(config.apiList.getMoonData.keyName, config.functiondone)
@@ -324,7 +325,25 @@ class DDdata {
       return data
     }, (2 * 60 * 60 * 1000) - 5000)
   }
-
+  async job() {
+    // tslint:disable-next-line: no-unused-expression
+    new CronJob('0 0 */1 * *', async () => {
+      await this.getStatusList()
+      await this.getemployee()
+      await this.gettoDayData()
+    }, null, true, 'Asia/Shanghai')
+    // tslint:disable-next-line: no-unused-expression
+    new CronJob('0 0 * * */7', async () => {
+      await this.getWeekData()
+      await this.getemployee(this.cooldata.dimissionList, this.cooldata.employee)
+    }, null, true, 'Asia/Shanghai')
+    // tslint:disable-next-line: no-unused-expression
+    new CronJob('0 0 */31 * *', async () => {
+      await this.getMoonData()
+      await this.getdimission()
+      await this.getemployee(this.cooldata.dimissionList, this.cooldata.employee)
+    }, null, true, 'Asia/Shanghai')
+  }
   destroy() {
     return null
   }
