@@ -256,12 +256,16 @@ class DDdata {
       })
       offsetis = offsetis + limitis
       data.recordresult.forEach((el: any) => {
-        const Lname = employeeList.find((Lelement: any) => {
+        let Lname = employeeList.find((Lelement: any) => {
           if (Lelement.userid === el.userId) {
             return { name: Lelement.name, branch: Lelement.branch }
           }
         })
-        const temp = {
+        if (Lname.name === undefined ) {
+          Lname.name = '未知人员或已离职人员'
+          Lname.branch = '未知人员或已离职人员'
+        }
+        let temp = {
           name: Lname.name,
           userId: el.userId,
           branch: Lname.branch,
@@ -273,6 +277,8 @@ class DDdata {
           userCheckTime: new Date(el.userCheckTime).toLocaleString()
         }
         Ltemp.push(temp)
+        temp = null
+        Lname = null
       })
       if (!data.hasMore) { start += 50; offsetis = 0 }
       if (!data.hasMore && start > useridList.length) { break }

@@ -1,8 +1,10 @@
 import * as Koa from 'koa'
 import * as Router from 'koa-router'
+import * as bodyParser  from 'koa-bodyparser'
 import DDdata from './index'
 import config from '../config/config'
 const app = new Koa()
+app.use(bodyParser())
 app.use(async (ctx, next) => {
   // 允许来自所有域名请求
   ctx.set('Access-Control-Allow-Origin', '*')
@@ -54,10 +56,14 @@ router.get('/getWeekData', (ctx) => {
   ctx.body = dd.weekdata
 })
 
-router.post('/getWeekData', async (ctx) => {
-  ctx.query.num = ctx.query.num || 1
-  ctx.body = await dd.getWeekData(ctx.query.num)
-  log(ctx.method + ' | ' + 'getWeekData' + ' | ' + ctx.ip + ' | ' + ctx.url + ctx.query.num)
+router.post('/postWeekData', async (ctx) => {
+  // ctx.query.num = ctx.query.num || 1
+  log(ctx.method + ' | ' + 'getWeekData' + ' | ' + ctx.ip + ' | ' + ctx.url + ' | ' + ctx.request.body.num)
+  if (ctx.request.body.num === undefined) {
+    ctx.body = ''
+  } else {
+  ctx.body = await dd.getWeekData(ctx.request.body.num)
+  }
 })
 
 router.get('/getMoonData', (ctx) => {
@@ -65,10 +71,14 @@ router.get('/getMoonData', (ctx) => {
   ctx.body = dd.moondata
 })
 
-router.post('/getMoonData', async (ctx) => {
-  ctx.query.num = ctx.query.num || 1
-  ctx.body = await dd.getMoonData(ctx.query.num)
-  log(ctx.method + ' | ' + 'getMoonData' + ' | ' + ctx.ip + ' | ' + ctx.url + ctx.query.num)
+router.post('/postMoonData', async (ctx) => {
+  // ctx.query.num = ctx.query.num || 1
+  log(ctx.method + ' | ' + 'getMoonData' + ' | ' + ctx.ip + ' | ' + ctx.url + ' | ' + ctx.request.body.num)
+  if (ctx.request.body.num === undefined) {
+    ctx.body = ''
+  } else {
+    ctx.body = await dd.getMoonData(ctx.request.body.num)
+  }
 })
 
 router.get('/getdimission', (ctx) => {
