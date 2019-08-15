@@ -27,7 +27,8 @@ export  default {
       keyName:'dimission'
     },
     gettoDayData:{
-      url:'attendance/list?access_token='
+      url:'attendance/list?access_token=',
+      keyName:'toDayData'
     }
   },
   loggerConfig1: {

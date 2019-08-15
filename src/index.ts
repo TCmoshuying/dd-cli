@@ -42,7 +42,7 @@ class DDdata {
     await this.getStatusList()
     await this.getdimission()
     await this.getemployee()
-    if(this.data.employee.length === this.data.userIdList.length){
+    if (this.data.employee.length === this.data.userIdList.length) {
       log('开始请求每日数据')
       await this.gettoDayData()
     }
@@ -129,7 +129,7 @@ class DDdata {
     // const Lclient = this.client
     for (let querix = 0; querix >= 0; querix++) {
       if (querix === list.length) {
-        log(api.keyName+config.functiondone)
+        log(api.keyName + config.functiondone)
         break
       }
       const { data } = await axios({
@@ -140,7 +140,7 @@ class DDdata {
           field_filter_list: fieldFilter,
         }
       })
-      if(data.success){
+      if (data.success) {
         const pushData = {
           name: data.result[0].field_list[0].value,
           userid: data.result[0].userid,
@@ -156,12 +156,13 @@ class DDdata {
   async gettoDayData(offsetis?: number, limitis?: number, list?: any[], token?: string) {
     offsetis = offsetis || 0
     limitis = limitis || 50
-    list = list || this.daliyData
+    list = list || this.data.userIdList
     token = token || this.AccessToken
     const time = new Date().toJSON().substring(0, 10)
     const fromtime = time + ' 00:00:00'
     const totime = time + ' 23:59:59'
     let Ltemp = []
+    let start = 0
     while (true) {
       const { data } = await axios({
         method: 'post',
@@ -169,38 +170,34 @@ class DDdata {
         data: {
           workDateFrom: fromtime,
           workDateTo: totime,
-          userIdList: list,    // 必填，与offset和limit配合使用
+          // 员工在企业内的UserID列表，企业用来唯一标识用户的字段。最多不能超过50个
+          userIdList: getDoubleIndex(list, start, start + 50),    // 必填，与offset和limit配合使用 
           offset: offsetis,    // 必填，第一次传0，如果还有多余数据，下次传之前的offset加上limit的值
           limit: limitis,     // 必填，表示数据条数，最大不能超过50条
         }
       })
-      log(data)
-      if(data.hasMore){
-        offsetis=limitis + offsetis
-        Ltemp.push(data.recordresult.map((el)=>{
-          const Lname = this.data.employee.find(Lelement=>{
-            if(Lelement.userid===el.userId) 
-            return {name:Lelement.name,branch:Lelement.branch}
-          })
-          let temp={
-            name:Lname.name,
-            branch:Lname.branch,
-            checkType:el.checkType,
-            locationResult:el.locationResult,
-            timeResult:el.timeResult,
-            baseCheckTime:el.baseCheckTime,
-            userCheckTime:new Date(el.userCheckTime).toJSON()
-          }
-          log(temp)
-          return temp
-        }))
-        // this.daliyData.push()
-      }else{
-        log(Ltemp.length)
-        break
-      }
+      offsetis = limitis + offsetis
+      data.recordresult.forEach((el:any)=>{
+        const Lname = this.data.employee.find(Lelement => {
+          if (Lelement.userid === el.userId)
+            return { name: Lelement.name, branch: Lelement.branch }
+        })
+        let temp = {
+          name: Lname.name,
+          branch: Lname.branch,
+          checkType: el.checkType,
+          timeResult: el.timeResult,
+          locationResult: el.locationResult,
+          // baseCheckTime: el.baseCheckTime,
+          userCheckTime: new Date(el.userCheckTime).toJSON()
+        }
+        Ltemp.push(temp)
+      })
+      if (!data.hasMore) { start += 50; offsetis = 0 }
+      if (!data.hasMore && start > list.length) break
     }
-    this.daliyData=Ltemp
+    this.daliyData = Ltemp
+    log(this.daliyData.length)
     return Ltemp
   }
   async getSimpleGroups(token: any) {
