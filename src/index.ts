@@ -36,8 +36,9 @@ class DDdata {
     await this.getdimission()
     await this.getemployee()
     await this.gettoDayData()
-    this.weekdata = await this.getWeekData()
-    this.moondata = await this.getMoonData()
+    await this.getWeekData()
+    await this.getMoonData()
+    await this.getemployee(this.cooldata.dimissionList, this.cooldata.employee)
   }
   /**
    * 不传参时,默认以最高速度获取在职员工id信息
@@ -159,7 +160,8 @@ class DDdata {
     const time = new Date().toJSON().substring(0, 10)
     const fromtime = time + ' 00:00:00'
     const totime = time + ' 23:59:59'
-    const Ltemp = await this.getKaoqingLists(list, this.data.employee, fromtime, totime, offsetis, limitis)
+    let Ltemp = []
+    Ltemp = await this.getKaoqingLists(list, this.data.employee, fromtime, totime, offsetis, limitis)
     this.daliyData = Ltemp
     log(config.apiList.gettoDayData.keyName, config.functiondone)
     return Ltemp
@@ -184,6 +186,7 @@ class DDdata {
     const time2 = '' + lastWeek2 + ' 23:59:59'
     let Ltemp = []
     Ltemp = await this.getKaoqingLists(list, this.data.employee, time1, time2, offsetis, limitis)
+    this.weekdata = Ltemp
     log(config.apiList.getWeekData.keyName, config.functiondone)
     return Ltemp
   }
@@ -215,6 +218,7 @@ class DDdata {
       day++
       if (day === Number(lastMoonDay)) { break }
     }
+    this.moondata = Ltemp
     log(config.apiList.getMoonData.keyName, config.functiondone)
     return Ltemp
   }
