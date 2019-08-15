@@ -41,10 +41,11 @@ class DDdata {
     await this.getToken()
     await this.getStatusList()
     await this.getdimission()
-    log(this.data.userIdList.length)
-    log(this.cooldata.dimissionList.length)
     await this.getemployee()
-    log(this.data.employee.length)
+    if(this.data.employee.length === this.data.userIdList.length){
+      log('开始请求每日数据')
+      await this.gettoDayData()
+    }
   }
   /**
    * 获取在职员工id信息
@@ -159,11 +160,12 @@ class DDdata {
     token = token || this.AccessToken
     const time = new Date().toJSON().substring(0, 10)
     const fromtime = time + ' 00:00:00'
-    const totime = time + '23:59:59'
+    const totime = time + ' 23:59:59'
+    let Ltemp = []
     while (true) {
       const { data } = await axios({
         method: 'post',
-        // url: config.apiList.getTodayData.url,
+        url: `${config.mainUrl}${config.apiList.gettoDayData.url}${token}`,
         data: {
           workDateFrom: fromtime,
           workDateTo: totime,
@@ -172,8 +174,34 @@ class DDdata {
           limit: limitis,     // 必填，表示数据条数，最大不能超过50条
         }
       })
-
+      log(data)
+      if(data.hasMore){
+        offsetis=limitis + offsetis
+        Ltemp.push(data.recordresult.map((el)=>{
+          const Lname = this.data.employee.find(Lelement=>{
+            if(Lelement.userid===el.userId) 
+            return {name:Lelement.name,branch:Lelement.branch}
+          })
+          let temp={
+            name:Lname.name,
+            branch:Lname.branch,
+            checkType:el.checkType,
+            locationResult:el.locationResult,
+            timeResult:el.timeResult,
+            baseCheckTime:el.baseCheckTime,
+            userCheckTime:new Date(el.userCheckTime).toJSON()
+          }
+          log(temp)
+          return temp
+        }))
+        // this.daliyData.push()
+      }else{
+        log(Ltemp.length)
+        break
+      }
     }
+    this.daliyData=Ltemp
+    return Ltemp
   }
   async getSimpleGroups(token: any) {
     const { data } = await axios(
