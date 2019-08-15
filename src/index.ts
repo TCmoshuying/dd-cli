@@ -11,15 +11,15 @@ const mainUrl = config.mainUrl
 class DDdata {
   private Key: string
   private Secret: string
-  private data = {
+  public data = {
     userIdList: [],
     employee: []
   }
-  private cooldata = {
+  public cooldata = {
     dimissionList: [],
     employee: []
   }
-  private daliyData = []
+  public daliyData = []
   private check = {
     userIdListLength: 1,
     dimissionListLength: 1
@@ -42,10 +42,7 @@ class DDdata {
     await this.getStatusList()
     await this.getdimission()
     await this.getemployee()
-    if (this.data.employee.length === this.data.userIdList.length) {
-      log('开始请求每日数据')
-      await this.gettoDayData()
-    }
+    await this.gettoDayData()
   }
   /**
    * 不传参时,默认以最高速度获取在职员工id信息
@@ -152,7 +149,7 @@ class DDdata {
           place: data.result[0].field_list[1].value
         }
         redata.push(pushData)
-        log(data.result[0].field_list[0].value + ' ' + api.keyName + config.functiondone)
+        // log(data.result[0].field_list[0].value + ' ' + api.keyName + config.functiondone)
       }
     }
     return redata
@@ -200,8 +197,9 @@ class DDdata {
           checkType: el.checkType,
           timeResult: el.timeResult,
           locationResult: el.locationResult,
-          // baseCheckTime: el.baseCheckTime,
-          userCheckTime: new Date(el.userCheckTime).toJSON()
+          baseCheckTime: el.baseCheckTime,
+          sortTime:el.userCheckTime,
+          userCheckTime: new Date(el.userCheckTime).toLocaleString()
         }
         Ltemp.push(temp)
       })
@@ -209,7 +207,7 @@ class DDdata {
       if (!data.hasMore && start > list.length) break
     }
     this.daliyData = Ltemp
-    log(this.daliyData.length)
+    log(config.apiList.gettoDayData.keyName,config.functiondone)
     return Ltemp
   }
   async getSimpleGroups(token: any) {
@@ -246,25 +244,12 @@ class DDdata {
       return data
     }, (2 * 60 * 60 * 1000) - 5000)
   }
-  // async clearRedis() {
-  // const temp = await this.client.del(
-  //     config.apiList.getStatusList.keyName,
-  //     config.apiList.getdimission.keyName,
-  //     config.apiList.getemployee.keyName)
-  //   log(temp)
-  //   return temp
-  // }
-  async redisOpen() {
-    // return redis.createClient(config.redis.Port, config.redis.Host)
-  }
-  async redisClose() {
-    // return this.client.quit()
-  }
+  
   destroy() {
     return null
   }
 }
 
-const dd = new DDdata(config.appkey, config.appsecret)
+// const dd = new DDdata(config.appkey, config.appsecret)
 // setTimeout(async () => { log(await dd.getStatusList()); }, 200);
-// export default DDdata;
+export default DDdata;
