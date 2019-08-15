@@ -6,6 +6,7 @@ import {
   DDTonken
 } from './index.interface'
 import { getFnName, delDir, checkDirExist, getDoubleIndex } from './tool'
+import { runInThisContext } from 'vm'
 const { log } = console
 const mainUrl = config.mainUrl
 class DDdata {
@@ -171,23 +172,86 @@ class DDdata {
     const fromtime = time + ' 00:00:00'
     const totime = time + ' 23:59:59'
     let Ltemp = []
-    let start = 0
-    while (true) {
-      const { data } = await axios({
-        method: 'post',
-        url: `${config.mainUrl}${config.apiList.gettoDayData.url}${token}`,
-        data: {
-          workDateFrom: fromtime,
-          workDateTo: totime,
-          // 员工在企业内的UserID列表，企业用来唯一标识用户的字段。最多不能超过50个
-          userIdList: getDoubleIndex(list, start, start + 50),    // 必填，与offset和limit配合使用 
-          offset: offsetis,    // 必填，第一次传0，如果还有多余数据，下次传之前的offset加上limit的值
-          limit: limitis,     // 必填，表示数据条数，最大不能超过50条
+    // while (true) {
+    //   const { data } = await axios({
+    //     method: 'post',
+    //     url: `${config.mainUrl}${config.apiList.gettoDayData.url}${token}`,
+    //     data: {
+    //       workDateFrom: fromtime,
+    //       workDateTo: totime,
+    //       // 员工在企业内的UserID列表，企业用来唯一标识用户的字段。最多不能超过50个
+    //       userIdList: getDoubleIndex(list, start, start + 50),    // 必填，与offset和limit配合使用 
+    //       offset: offsetis,    // 必填，第一次传0，如果还有多余数据，下次传之前的offset加上limit的值
+    //       limit: limitis,     // 必填，表示数据条数，最大不能超过50条
+    //     }
+    //   })
+    //   offsetis = limitis + offsetis
+    //   data.recordresult.forEach((el:any)=>{
+    //     const Lname = this.data.employee.find(Lelement => {
+    //       if (Lelement.userid === el.userId)
+    //         return { name: Lelement.name, branch: Lelement.branch }
+    //     })
+    //     let temp = {
+    //       name: Lname.name,
+    //       branch: Lname.branch,
+    //       checkType: el.checkType,
+    //       timeResult: el.timeResult,
+    //       locationResult: el.locationResult,
+    //       baseCheckTime: el.baseCheckTime,
+    //       sortTime:el.userCheckTime,
+    //       userCheckTime: new Date(el.userCheckTime).toLocaleString()
+    //     }
+    //     Ltemp.push(temp)
+    //   })
+    //   if (!data.hasMore) { start += 50; offsetis = 0 }
+    //   if (!data.hasMore && start > list.length) break
+    // }
+    this.daliyData = await this.getKaoqingLists(config.apiList.gettoDayData.keyName,this.data.employee,fromtime,totime)
+    log(config.apiList.gettoDayData.keyName,config.functiondone)
+    return Ltemp
+  }
+
+  async getSimpleGroups(token: any) {
+    const { data } = await axios(
+      `${mainUrl}/topapi/smartwork/hrm/employee/queryonjob?access_token=${token}`)
+    if (data) { log(`SimpleGroups is updata`) }
+    log(data)
+    return data
+  }
+  /**
+   * 获取time1和time2之间的用户考勤信息,time1和time2最长间隔7天
+   * @param useridList 用户id列表,查询考勤数据必填选项
+   * @param employeeList 用户id与姓名,部门,职位等信息表,格式为数组对象[{name:name,branch:branch}]
+   * @param time1 查询所需的开始时间
+   * @param time2 查询所需的结束时间
+   * @param apiUrl 请求的url这里似乎是固定的
+   * @param offsetis 分页值,默认从0开始
+   * @param limitis 单页数据大小,默认为50
+   * @param start 用户id列表的查询起始值,默认从0开始
+   * @param token 秘钥
+   */
+  async getKaoqingLists (useridList:any,employeeList:any[],time1:string, time2:string,apiUrl?:string,offsetis?:number,limitis?:number,start?:number,token?:string) {
+    const Ltemp = []
+    start = start || 0
+    limitis = limitis || 50
+    offsetis = offsetis || 0
+    token = token || this.AccessToken
+    apiUrl = apiUrl || config.apiList.getKaoqingLists.url
+    while(true){
+      const {data} = await axios({
+        method:'post',
+        url:`${mainUrl}${apiUrl}${token}`,
+        data:{
+          'workDateFrom': time1,
+          'workDateTo': time2,
+          'userIdList': getDoubleIndex(useridList, start, start + 50), // 必填，与offset和limit配合使用
+          'offset': offsetis, // 必填，第一次传0，如果还有多余数据，下次传之前的offset加上limit的值
+          'limit': limitis // 必填，表示数据条数，最大不能超过50条
         }
       })
-      offsetis = limitis + offsetis
+      offsetis = offsetis + limitis
       data.recordresult.forEach((el:any)=>{
-        const Lname = this.data.employee.find(Lelement => {
+        const Lname = employeeList.find((Lelement:any) => {
           if (Lelement.userid === el.userId)
             return { name: Lelement.name, branch: Lelement.branch }
         })
@@ -204,20 +268,10 @@ class DDdata {
         Ltemp.push(temp)
       })
       if (!data.hasMore) { start += 50; offsetis = 0 }
-      if (!data.hasMore && start > list.length) break
+      if (!data.hasMore && start > useridList.length) break
     }
-    this.daliyData = Ltemp
-    log(config.apiList.gettoDayData.keyName,config.functiondone)
     return Ltemp
   }
-  async getSimpleGroups(token: any) {
-    const { data } = await axios(
-      `${mainUrl}/topapi/smartwork/hrm/employee/queryonjob?access_token=${token}`)
-    if (data) { log(`SimpleGroups is updata`) }
-    log(data)
-    return data
-  }
-
   /**
    * 立即获取秘钥并保存在对象中
    */

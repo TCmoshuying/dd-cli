@@ -29,6 +29,9 @@ export  default {
     gettoDayData:{
       url:'attendance/list?access_token=',
       keyName:'toDayData'
+    },
+    getKaoqingLists:{
+      url:'attendance/list?access_token='
     }
   },
   loggerConfig1: {
