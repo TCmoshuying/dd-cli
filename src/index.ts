@@ -48,12 +48,13 @@ class DDdata {
     }
   }
   /**
-   * 获取在职员工id信息
+   * 不传参时,默认以最高速度获取在职员工id信息
    * @param speed 获取速度
    * @param Substate 员工子状态
    * @param offsetis 分页值,默认从0开始
    * @param sizeis 单页数据大小
    * @param token 秘钥
+   * @returns array 离职员工列表
    */
   async getStatusList(Substate?: string, offsetis?: string | number, sizeis?: string | number, token?: string) {
     sizeis = sizeis || 20
@@ -80,13 +81,15 @@ class DDdata {
         break
       }
     }
+    return userIdList
   }
   /**
-   * 获取离职员工id信息
+   * 不传参时,默认以最高速度获取离职员工id信息
    * @param speed 获取速度
    * @param offsetis 分页值
    * @param sizeis 单词取得数据大小
    * @param token 秘钥
+   * @returns array 离职员工id信息
    */
   async getdimission(offsetis?: string | number, sizeis?: string | number, token?: string) {
     sizeis = sizeis || 50
@@ -109,16 +112,17 @@ class DDdata {
       } else {
         log(config.apiList.getdimission.keyName + config.functiondone)
         this.cooldata.dimissionList = dimissionList
-        return true
-        // break
+        break
       }
     }
+    return dimissionList
   }
   /**
-   * 返回员工部门职位,姓名和id信息
+   * 不传参时,函数默认调用在职(待离职也算)员工列表,并获取其id,姓名,职位,部门信息
    * @param list 员工id列表
    * @param redata 返回数据,会被修改
    * @param token 秘钥
+   * @returns array 返回员工部门职位,姓名和id信息
    */
   async getemployee(list?: { [x: string]: any; }, redata?: { [x: string]: any; }, token?: string) {
     token = token || this.AccessToken
@@ -151,9 +155,17 @@ class DDdata {
         log(data.result[0].field_list[0].value + ' ' + api.keyName + config.functiondone)
       }
     }
-    return
+    return redata
   }
-  async gettoDayData(offsetis?: number, limitis?: number, list?: any[], token?: string) {
+  /**
+   * 不传参时,默认以最高速度获取在职员工每日打卡结果
+   * @param offsetis 分页值,不传参默认以0开始
+   * @param limitis 分页大小,也就是每一次查询时的返回数据条数,默认为50
+   * @param list 员工列表,默认使用在职员工信息
+   * @param token 秘钥
+   * @returns array 返回在职员工打卡结果
+   */
+  async gettoDayData(offsetis?: number, limitis?: number, list?: any[], token?: string){
     offsetis = offsetis || 0
     limitis = limitis || 50
     list = list || this.data.userIdList
