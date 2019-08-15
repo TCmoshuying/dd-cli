@@ -1,6 +1,6 @@
-import * as fs from 'fs'
+// import * as fs from 'fs'
 import axios from 'axios'
-import * as redis from 'redis'
+// import * as redis from 'redis'
 import config from '../config/config'
 import {
   DDTonken
@@ -17,7 +17,7 @@ class DDdata {
   }
   private cooldata = {
     dimissionList: [],
-    employee:  []
+    employee: []
   }
   private daliyData = []
   private check = {
@@ -25,7 +25,7 @@ class DDdata {
     dimissionListLength: 1
   }
   private AccessToken: string
-  private client = redis.createClient(config.redis.Port, config.redis.Host)
+  // private client = redis.createClient(config.redis.Port, config.redis.Host)
   /**
    * 构建主要参数
    * @param {string} appKey
@@ -37,12 +37,14 @@ class DDdata {
     this.refreshen()
   }
   async refreshen() {
-    await this.clearRedis()
+    // await this.clearRedis()
     await this.getToken()
     await this.getStatusList()
+    await this.getdimission()
+    log(this.data.userIdList.length)
+    log(this.cooldata.dimissionList.length)
     await this.getemployee()
-    // const data = await this.client.get('temp')
-    // log(data)
+    log(this.data.employee.length)
   }
   /**
    * 获取在职员工id信息
@@ -52,24 +54,24 @@ class DDdata {
    * @param sizeis 单页数据大小
    * @param token 秘钥
    */
-  async getStatusList( Substate ?: string, offsetis ?: string|number, sizeis ?: string|number, token ?: string) {
+  async getStatusList(Substate?: string, offsetis?: string | number, sizeis?: string | number, token?: string) {
     sizeis = sizeis || 20
     offsetis = offsetis || 0
     Substate = Substate || config.apiList.getStatusList.status_list
     token = token || this.AccessToken
     const userIdList = new Array()
-    const Lclient = this.client
+    // const Lclient = this.client
     while (true) {
       const { data } = await axios({
         method: 'post',
         url: `${mainUrl}${config.apiList.getStatusList.url}${token}`,
-        data: {status_list: Substate, offset: offsetis, size: sizeis}
+        data: { status_list: Substate, offset: offsetis, size: sizeis }
       })
       offsetis = data.result.next_cursor
       if (data.result.next_cursor !== undefined) {
         data.result.data_list.forEach((el: any) => {
           userIdList.push(el)
-          Lclient.sadd(config.apiList.getStatusList.keyName, el)
+          // Lclient.sadd(config.apiList.getStatusList.keyName, el)
         })
       } else {
         log(config.apiList.getStatusList.keyName + config.functiondone)
@@ -78,7 +80,6 @@ class DDdata {
       }
     }
   }
-
   /**
    * 获取离职员工id信息
    * @param speed 获取速度
@@ -86,23 +87,23 @@ class DDdata {
    * @param sizeis 单词取得数据大小
    * @param token 秘钥
    */
-  async getdimission(offsetis ?: string|number, sizeis ?: string|number, token?: string) {
+  async getdimission(offsetis?: string | number, sizeis?: string | number, token?: string) {
     sizeis = sizeis || 50
     offsetis = offsetis || 0
     token = token || this.AccessToken
-    const dimissionList = this.data.userIdList
-    const Lclient = this.client
+    const dimissionList = []
+    // const Lclient = this.client
     while (true) {
-      const {data} = await axios({
+      const { data } = await axios({
         method: 'post',
         url: `${mainUrl}${config.apiList.getdimission.url}${token}`,
-        data: {offset: offsetis, size: sizeis}
+        data: { offset: offsetis, size: sizeis }
       })
       offsetis = data.result.next_cursor
       if (data.result.next_cursor !== undefined) {
         data.result.data_list.forEach((el: any) => {
           dimissionList.push(el)
-          Lclient.sadd(config.apiList.getdimission.keyName, el)
+          // Lclient.sadd(config.apiList.getdimission.keyName, el)
         })
       } else {
         log(config.apiList.getdimission.keyName + config.functiondone)
@@ -112,43 +113,44 @@ class DDdata {
       }
     }
   }
-
   /**
    * 返回员工部门职位,姓名和id信息
    * @param list 员工id列表
    * @param redata 返回数据,会被修改
    * @param token 秘钥
    */
-  async getemployee( list ?: { [x: string]: any; }, redata ?: { [x: string]: any; }, token ?: string) {
+  async getemployee(list?: { [x: string]: any; }, redata?: { [x: string]: any; }, token?: string) {
     token = token || this.AccessToken
     list = list || this.data.userIdList
     redata = redata || this.data.employee
     const api = config.apiList.getemployee
     const fieldFilter = api.fieldFilter
-    const Lclient = this.client
+    // const Lclient = this.client
     for (let querix = 0; querix >= 0; querix++) {
-      const {data} = await axios({
+      if (querix === list.length) {
+        log(api.keyName+config.functiondone)
+        break
+      }
+      const { data } = await axios({
         method: 'post',
         url: `${mainUrl}${api.url}${token}`,
         data: {
           userid_list: list[querix],
-          field_filter_list : fieldFilter,
+          field_filter_list: fieldFilter,
         }
       })
-      const pushData = {
-        name: data.result[0].field_list[0].value,
-        userid: data.result[0].userid,
-        branch: data.result[0].field_list[3].value,
-        place: data.result[0].field_list[1].value
+      if(data.success){
+        const pushData = {
+          name: data.result[0].field_list[0].value,
+          userid: data.result[0].userid,
+          branch: data.result[0].field_list[3].value,
+          place: data.result[0].field_list[1].value
+        }
+        redata.push(pushData)
+        log(data.result[0].field_list[0].value + ' ' + api.keyName + config.functiondone)
       }
-      this.data.employee.push(pushData)
-      Lclient.sadd(api.keyName, JSON.stringify(pushData))
-      log(data.result[0].field_list[0].value + ':' + api.keyName + ' is updata')
-      if (querix === list.length) {
-        log(this.data.employee[0])
-        break
-     }
     }
+    return
   }
   async gettoDayData(offsetis?: number, limitis?: number, list?: any[], token?: string) {
     offsetis = offsetis || 0
@@ -159,9 +161,9 @@ class DDdata {
     const fromtime = time + ' 00:00:00'
     const totime = time + '23:59:59'
     while (true) {
-      const {data} = await axios({
+      const { data } = await axios({
         method: 'post',
-        url: config.apiList.getTodayData.url,
+        // url: config.apiList.getTodayData.url,
         data: {
           workDateFrom: fromtime,
           workDateTo: totime,
@@ -187,7 +189,7 @@ class DDdata {
   async getToken() {
     const { Key, Secret } = this
     const { data } = await axios(
-    `${mainUrl}/gettoken?appkey=${Key}&appsecret=${Secret}`)
+      `${mainUrl}/gettoken?appkey=${Key}&appsecret=${Secret}`)
     if (data.access_token) { log(`access_token is updata`) } else {
       throw new Error('秘钥请求失败, 请检查秘钥或网络')
     }
@@ -202,24 +204,24 @@ class DDdata {
       const { Key, Secret } = this
       const { data } = await axios(
         `${mainUrl}/gettoken?appkey=${Key}&appsecret=${Secret}`)
-      if (data.access_token) { log(`access_token is updata`) } else {throw new Error('秘钥请求失败, 请检查秘钥或网络') }
+      if (data.access_token) { log(`access_token is updata`) } else { throw new Error('秘钥请求失败, 请检查秘钥或网络') }
       this.AccessToken = data.access_token
       return data
     }, (2 * 60 * 60 * 1000) - 5000)
   }
-  async clearRedis() {
-    const temp = await this.client.del(
-      config.apiList.getStatusList.keyName,
-      config.apiList.getdimission.keyName,
-      config.apiList.getemployee.keyName)
-    log(temp)
-    return temp
-  }
+  // async clearRedis() {
+  // const temp = await this.client.del(
+  //     config.apiList.getStatusList.keyName,
+  //     config.apiList.getdimission.keyName,
+  //     config.apiList.getemployee.keyName)
+  //   log(temp)
+  //   return temp
+  // }
   async redisOpen() {
-    return redis.createClient(config.redis.Port, config.redis.Host)
+    // return redis.createClient(config.redis.Port, config.redis.Host)
   }
   async redisClose() {
-    return this.client.quit()
+    // return this.client.quit()
   }
   destroy() {
     return null
