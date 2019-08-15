@@ -1,5 +1,6 @@
 import axios from 'axios'
 import config from '../config/config'
+import Moment = require('moment')
 import { getFnName, delDir, checkDirExist, getDoubleIndex } from './tool'
 
 const { log } = console
@@ -153,11 +154,33 @@ class DDdata {
     const fromtime = time + ' 00:00:00'
     const totime = time + ' 23:59:59'
     const Ltemp = []
-    this.daliyData = await this.getKaoqingLists(config.apiList.gettoDayData.keyName, this.data.employee, fromtime, totime)
+    this.daliyData = await this.getKaoqingLists(list, this.data.employee, fromtime, totime, offsetis, limitis)
     log(config.apiList.gettoDayData.keyName, config.functiondone)
     return Ltemp
   }
-
+/**
+ * 返回上num周的数据,不传数据默认获取上周在职员工的打卡数据(不会解析离职员工信息,返回'已离职')
+ * @param num 获取上num周的数据,传或不传为上周数据,传2位上第二周数据
+ * @param offsetis 分页值
+ * @param limitis 分页数据大小
+ * @param list 员工id:名字信息表
+ * @param token 秘钥
+ */
+  async getWeekData(num?: number, offsetis?: number, limitis?: number, list?: any[], token?: string) {
+    num = num || 1
+    limitis = limitis || 50
+    offsetis = offsetis || 0
+    list = list || this.data.userIdList
+    token = token || this.AccessToken
+    const lastWeek1 = new Moment().day(-((num * 7) - 1)).format('YYYY-MM-DD').toString()
+    const lastWeek2 = new Moment().day(-((num * 7) - 7)).format('YYYY-MM-DD').toString()
+    const time1 = '' + lastWeek1 + ' 00:00:00'
+    const time2 = '' + lastWeek2 + ' 23:59:59'
+    const Ltemp = []
+    this.daliyData = await this.getKaoqingLists(list, this.data.employee, time1, time2, offsetis, limitis)
+    log(config.apiList.getWeekData.keyName, config.functiondone)
+    return Ltemp
+  }
   async getSimpleGroups(token: any) {
     const { data } = await axios(
       `${mainUrl}/topapi/smartwork/hrm/employee/queryonjob?access_token=${token}`)
@@ -171,14 +194,14 @@ class DDdata {
    * @param employeeList 用户id与姓名,部门,职位等信息表,格式为数组对象[{name:name,branch:branch}]
    * @param time1 查询所需的开始时间
    * @param time2 查询所需的结束时间
-   * @param apiUrl 请求的url这里似乎是固定的
    * @param offsetis 分页值,默认从0开始
    * @param limitis 单页数据大小,默认为50
+   * @param apiUrl 请求的url这里似乎是固定的
    * @param start 用户id列表的查询起始值,默认从0开始
    * @param token 秘钥
    */
   async getKaoqingLists(useridList: any, employeeList: any[], time1: string, time2: string,
-                        apiUrl?: string, offsetis?: number, limitis?: number, start?: number, token?: string) {
+                        offsetis?: number, limitis?: number, apiUrl?: string, start?: number, token?: string) {
     const Ltemp = []
     start = start || 0
     limitis = limitis || 50
