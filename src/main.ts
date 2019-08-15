@@ -3,10 +3,20 @@ import * as Router from 'koa-router'
 // tslint:disable-next-line: import-spacing
 import * as bodyParser  from 'koa-bodyparser'
 import log4js = require('log4js')
-log4js.configure(config.loggerConfig1)
+log4js.configure({
+  appenders: {
+    consoleout: { type: 'console' },
+    fileout: { type: 'file', filename: 'src/log/log.log', layout: { type: 'pattern', pattern: '[%d] [%p] %c [%1]-%f{1} %m' }}
+  },
+  categories: {
+    default: { appenders: ['consoleout', 'fileout'], level: 'debug' }
+  }
+})
 const logger = log4js.getLogger()
+
 import DDdata from './index'
 import config from '../config/config'
+
 const app = new Koa()
 app.use(bodyParser())
 app.use(async (ctx, next) => {

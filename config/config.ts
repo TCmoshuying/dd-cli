@@ -38,7 +38,7 @@ export  default {
       url: 'attendance/list?access_token='
     }
   },
-  loggerConfig1: {
+  loggerConfig: {
     appenders: {
       consoleout: { type: 'console' },
       fileout: { type: 'file', filename: 'src/log/log.log', layout: { type: 'pattern', pattern: '[%d] [%p] %c [%1]-%f{1} %m' }}

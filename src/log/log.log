@@ -1,0 +1,5 @@
+[2019-08-15T19:52:29.966] [INFO] default [[39m- 80
+[2019-08-15T19:53:13.428] [INFO] default [[39m- GET | getMoonData | ::ffff:149.28.38.150 | /getMoonData?num=1
+[2019-08-15T19:53:44.272] [INFO] default [[39m- GET | getMoonData | ::ffff:149.28.38.150 | /getMoonData
+[2019-08-15T19:54:17.672] [INFO] default [[39m- GET | gettoDayData | ::ffff:149.28.38.150 | /gettoDayData
+[2019-08-15T19:54:17.688] [INFO] default [[39m- GET | getWeekData | ::ffff:149.28.38.150 | /getWeekData

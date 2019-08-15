@@ -214,10 +214,13 @@ class DDdata {
     const lastMoon1 = new Moment([year, month, day]).format('YYYY-MM-DD')
     const lastMoonDay = new Moment(lastMoon1).endOf('month').format('DD')
     for (let day = 1; day < Number(lastMoonDay); day++) {
-      const time1 = new Moment([year, month, day]).format('YYYY-MM-DD') + ' 00:00:00'
-      const time2 = new Moment([year, month, day]).add(1, 'days').format('YYYY-MM-DD') + ' 23:59:59'
-      const temp = await this.getKaoqingLists(list, this.data.employee, time1, time2, offsetis, limitis)
+      let time1 = new Moment([year, month, day]).format('YYYY-MM-DD') + ' 00:00:00'
+      let time2 = new Moment([year, month, day]).add(1, 'days').format('YYYY-MM-DD') + ' 23:59:59'
+      let temp = await this.getKaoqingLists(list, this.data.employee, time1, time2, offsetis, limitis)
       Ltemp.push(temp)
+      time2 = null
+      time1 = null
+      temp = null
     }
     this.moondata = Ltemp
     log(config.apiList.getMoonData.keyName, config.functiondone)
