@@ -258,31 +258,37 @@ class DDdata {
         }
       })
       offsetis = offsetis + limitis
-      data.recordresult.forEach((el: any) => {
-        let Lname = employeeList.find((Lelement: any) => {
+      // data.recordresult.forEach(async (el: any) => {
+      for (const el of data.recordresult) {
+        // const el = data.recordresult[index]
+        let Lname = employeeList.find(async (Lelement: any) => {
           if (Lelement.userid === el.userId) {
             return { name: Lelement.name, branch: Lelement.branch }
           }
         })
+
         if (Lname.name === undefined ) {
           Lname.name = '未知人员或已离职人员'
           Lname.branch = '未知人员或已离职人员'
         }
+        const dataStr = new Date(el.baseCheckTime).toLocaleDateString()
+        const holiday = await axios.get('http://api.goseek.cn/Tools/holiday?date=' + dataStr)
         let temp = {
           name: Lname.name,
           userId: el.userId,
           branch: Lname.branch,
           checkType: el.checkType,
           timeResult: el.timeResult,
-          locationResult: el.locationResult,
-          baseCheckTime: el.baseCheckTime,
+          workDay: holiday.data.data,
           sortTime: el.userCheckTime,
+          baseCheckTime: el.baseCheckTime,
+          locationResult: el.locationResult,
           userCheckTime: new Date(el.userCheckTime).toLocaleString()
         }
         Ltemp.push(temp)
         temp = null
         Lname = null
-      })
+      }
       if (!data.hasMore) { start += 50; offsetis = 0 }
       if (!data.hasMore && start > useridList.length) { break }
     }

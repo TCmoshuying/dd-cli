@@ -65,6 +65,11 @@ router.get('/gettoDayData', (ctx: any) => {
   ctx.body = dd.daliyData
 })
 
+router.get('/getemployee', (ctx: any) => {
+  logger.info(ctx.method + ' | ' + 'getemployee' + ' | ' + ctx.ip + ' | ' + ctx.url)
+  ctx.body = dd.data.employee
+})
+
 router.post('/posttoDayData', async (ctx: any) => {
   logger.info(ctx.method + ' | ' + 'posttoDayData' + ' | ' + ctx.ip + ' | ' + ctx.url)
   ctx.body = await dd.gettoDayData()
