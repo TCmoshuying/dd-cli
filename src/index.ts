@@ -4,7 +4,6 @@ const CronJob = require('cron').CronJob
 import config from '../config/config'
 // tslint:disable-next-line: no-var-requires
 const Moment = require('moment')
-import { getFnName, delDir, checkDirExist, getDoubleIndex } from './tool'
 
 const { log } = console
 const mainUrl = config.mainUrl
@@ -253,7 +252,7 @@ class DDdata {
         data: {
           workDateFrom: time1,
           workDateTo: time2,
-          userIdList: getDoubleIndex(useridList, start, start + 50), // 必填，与offset和limit配合使用
+          userIdList: this.getDoubleIndex(useridList, start, start + 50), // 必填，与offset和limit配合使用
           offset: offsetis, // 必填，第一次传0，如果还有多余数据，下次传之前的offset加上limit的值
           limit: limitis // 必填，表示数据条数，最大不能超过50条
         }
@@ -289,13 +288,7 @@ class DDdata {
     }
     return Ltemp
   }
-  async getSimpleGroups(token: any) {
-    const { data } = await axios(
-      `${mainUrl}/topapi/smartwork/hrm/employee/queryonjob?access_token=${token}`)
-    if (data) { log(`SimpleGroups is updata`) }
-    log(data)
-    return data
-  }
+
   /**
    * 立即获取秘钥并保存在对象中
    */
@@ -328,6 +321,7 @@ class DDdata {
       return data
     }, (2 * 60 * 60 * 1000) - 5000)
   }
+
   async job() {
     // tslint:disable-next-line: no-unused-expression
     new CronJob('0 0 */1 * *', async () => {
@@ -347,6 +341,17 @@ class DDdata {
       await this.getemployee(this.cooldata.dimissionList, this.cooldata.employee)
     }, null, true, 'Asia/Shanghai')
   }
+
+  getDoubleIndex = (arr: { [x: string]: any; }, start: number, end: number) => {
+    const temp = []
+    for (let index = start; index < end; index++) {
+      const element = arr[index]
+      if (element === undefined) { continue }
+      temp.push(element)
+    }
+    return temp
+  }
+
   destroy() {
     return null
   }
