@@ -10,13 +10,13 @@ const mainUrl = config.mainUrl
 
 class DDdata {
   private Key: string
-  private Secret: string
-  public data = {userIdList: [], employee: []}
-  public cooldata = {dimissionList: [], employee: []}
   public weekdata = []
   public moondata = []
   public daliyData = []
+  private Secret: string
   private AccessToken: string
+  public data = {userIdList: [], employee: []}
+  public cooldata = {dimissionList: [], employee: []}
   /**
    * 构建主要参数
    * @param {string} appKey
