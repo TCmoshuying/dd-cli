@@ -252,21 +252,18 @@ class DDdata {
         data: {
           workDateFrom: time1,
           workDateTo: time2,
-          userIdList: this.getDoubleIndex(useridList, start, start + 50), // 必填，与offset和limit配合使用
-          offset: offsetis, // 必填，第一次传0，如果还有多余数据，下次传之前的offset加上limit的值
-          limit: limitis // 必填，表示数据条数，最大不能超过50条
+          userIdList: this.getDoubleIndex(useridList, start, start + 50),
+          offset: offsetis,
+          limit: limitis
         }
       })
       offsetis = offsetis + limitis
-      // data.recordresult.forEach(async (el: any) => {
       for (const el of data.recordresult) {
-        // const el = data.recordresult[index]
-        let Lname = employeeList.find(async (Lelement: any) => {
+        let Lname = employeeList.find((Lelement: any) => {
           if (Lelement.userid === el.userId) {
             return { name: Lelement.name, branch: Lelement.branch }
           }
         })
-
         if (Lname.name === undefined ) {
           Lname.name = '未知人员或已离职人员'
           Lname.branch = '未知人员或已离职人员'
@@ -331,17 +328,21 @@ class DDdata {
   async job() {
     // tslint:disable-next-line: no-unused-expression
     new CronJob('0 0 */1 * *', async () => {
+      // 更新每日数据
       await this.getStatusList()
       await this.getemployee()
       await this.gettoDayData()
     }, null, true, 'Asia/Shanghai')
     // tslint:disable-next-line: no-unused-expression
     new CronJob('0 0 * * */7', async () => {
+      // 更新每周数据
       await this.getWeekData()
+      // 离职员工信息
       await this.getemployee(this.cooldata.dimissionList, this.cooldata.employee)
     }, null, true, 'Asia/Shanghai')
     // tslint:disable-next-line: no-unused-expression
     new CronJob('0 0 */31 * *', async () => {
+      // 更新每月数据
       await this.getMoonData()
       await this.getdimission()
       await this.getemployee(this.cooldata.dimissionList, this.cooldata.employee)
