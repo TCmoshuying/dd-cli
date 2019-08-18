@@ -38,7 +38,11 @@ class DDdata {
     await this.getemployee()
     await this.gettoDayData()
     await this.getWeekData()
+    await this.getWeekData(2)
+    await this.getWeekData(3)
+    await this.getWeekData(4)
     await this.getMoonData()
+    await this.getMoonData(2)
     await this.getdimission()
     await this.getemployee(this.cooldata.dimissionList, this.cooldata.employee)
   }
@@ -188,8 +192,8 @@ class DDdata {
     const time2 = '' + lastWeek2 + ' 23:59:59'
     let Ltemp = []
     Ltemp = await this.getKaoqingLists(list, this.data.employee, time1, time2, offsetis, limitis)
-    this.weekdata = Ltemp
-    log(config.apiList.getWeekData.keyName, config.functiondone)
+    this.weekdata[num] = Ltemp
+    log(config.apiList.getWeekData.keyName, num, config.functiondone)
     return Ltemp
   }
   /**
@@ -221,8 +225,8 @@ class DDdata {
       time1 = null
       temp = null
     }
-    this.moondata = Ltemp
-    log(config.apiList.getMoonData.keyName, config.functiondone)
+    this.moondata[num] = Ltemp
+    log(config.apiList.getMoonData.keyName, num, config.functiondone)
     return Ltemp
   }
   /**
@@ -326,6 +330,11 @@ class DDdata {
   }
 
   async job() {
+    // tslint:disable-next-line: no-unused-expression
+    new CronJob('*/1 * * * *', async () => {
+      // 每分钟更新日数据
+      await this.gettoDayData()
+    }, null, true, 'Asia/Shanghai')
     // tslint:disable-next-line: no-unused-expression
     new CronJob('0 0 */1 * *', async () => {
       // 更新每日数据
