@@ -67,7 +67,7 @@ router.get('/getemployee', (ctx: any) => {
 
 router.get('/gettoDayData', (ctx: any) => {
   logger.info(ctx.method + ' | ' + 'gettoDayData' + ' | ' + ctx.ip + ' | ' + ctx.url)
-  ctx.body = dd.daliyData[ctx.request.body.num]
+  ctx.body = dd.daliyData
 })
 
 router.post('/posttoDayData', async (ctx: any) => {
@@ -76,8 +76,12 @@ router.post('/posttoDayData', async (ctx: any) => {
 })
 
 router.get('/getWeekData', (ctx: any) => {
-  logger.info(ctx.method + ' | ' + 'getWeekData' + ' | ' + ctx.ip + ' | ' + ctx.url)
-  ctx.body = dd.weekdata[ctx.request.body.num]
+  ctx.request.query.num = ctx.request.query.num || 1
+  logger.info(ctx.method + ' | ' + 'getWeekData' + ' | ' + ctx.ip + ' | ' + ctx.url + ' | ' + ctx.request.query.num + ' | ' + dd.weekdata.length)
+  // let num = Number(ctx.request.query.num)
+  ctx.body = dd.weekdata[Number(ctx.request.query.num)]
+  // num = null
+  // ctx.body = dd.weekdata[Number(ctx.request.body.num)]
 })
 
 router.post('/postWeekData', async (ctx: any) => {

@@ -26,25 +26,25 @@ class DDdata {
     this.Key = key
     this.Secret = Secret
     this.refreshen()
-    this.getAccessTonken()
-    this.job()
   }
   /**
    * 启动时刷新数据
    */
   async refreshen() {
+    this.job()
+    this.getAccessTonken()
     await this.getToken()
     await this.getStatusList()
     await this.getemployee()
-    await this.gettoDayData()
-    await this.getWeekData()
+    // await this.gettoDayData()
+    await this.getWeekData(1)
     await this.getWeekData(2)
     await this.getWeekData(3)
-    await this.getWeekData(4)
-    await this.getMoonData()
-    await this.getMoonData(2)
-    await this.getdimission()
-    await this.getemployee(this.cooldata.dimissionList, this.cooldata.employee)
+    // await this.getWeekData(4)
+    // await this.getMoonData(1)
+    // await this.getMoonData(2)
+    // await this.getdimission()
+    // await this.getemployee(this.cooldata.dimissionList, this.cooldata.employee)
   }
   /**
    * 不传参时,默认以最高速度获取在职员工id信息
@@ -193,6 +193,7 @@ class DDdata {
     let Ltemp = []
     Ltemp = await this.getKaoqingLists(list, this.data.employee, time1, time2, offsetis, limitis)
     this.weekdata[num] = Ltemp
+    log(JSON.stringify(this.weekdata))
     log(config.apiList.getWeekData.keyName, num, config.functiondone)
     return Ltemp
   }
