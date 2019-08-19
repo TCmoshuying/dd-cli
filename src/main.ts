@@ -53,7 +53,7 @@ app.use(async (ctx, next) => {
   await next()
 })
 const router = new Router()
-const dd =  new DDdata(config.appkey, config.appsecret)
+const dd =  new DDdata(config.appkey, config.appsecret, 4, 2)
 router.get('/', async (ctx: any) => {
   logger.info(ctx.method + ' | ' + 'main' + ' | ' + ctx.ip + ' | ' + ctx.url)
   ctx.redirect('https://me.csdn.net/qq_34846662')
@@ -78,10 +78,7 @@ router.post('/posttoDayData', async (ctx: any) => {
 router.get('/getWeekData', (ctx: any) => {
   ctx.request.query.num = ctx.request.query.num || 1
   logger.info(ctx.method + ' | ' + 'getWeekData' + ' | ' + ctx.ip + ' | ' + ctx.url + ' | ' + ctx.request.query.num + ' | ' + dd.weekdata.length)
-  // let num = Number(ctx.request.query.num)
   ctx.body = dd.weekdata[Number(ctx.request.query.num)]
-  // num = null
-  // ctx.body = dd.weekdata[Number(ctx.request.body.num)]
 })
 
 router.post('/postWeekData', async (ctx: any) => {
@@ -95,8 +92,9 @@ router.post('/postWeekData', async (ctx: any) => {
 })
 
 router.get('/getMoonData', (ctx: any) => {
-  logger.info(ctx.method + ' | ' + 'getMoonData' + ' | ' + ctx.ip + ' | ' + ctx.url)
-  ctx.body = dd.moondata
+  ctx.request.query.num = ctx.request.query.num || 1
+  logger.info(ctx.method + ' | ' + 'getMoonData' + ' | ' + ctx.ip + ' | ' + ctx.url + ' | ' + ctx.request.query.num + ' | ' + dd.moondata.length)
+  ctx.body = dd.moondata[ctx.request.query.num]
 })
 
 router.post('/postMoonData', async (ctx: any) => {
