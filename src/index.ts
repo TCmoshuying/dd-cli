@@ -38,13 +38,15 @@ class DDdata {
     await this.getToken()
     await this.getStatusList()
     await this.getemployee()
-    for (let ix = 1; ix < week + 1; ix++) {
+    await this.getWeekData()
+    await this.getMoonData()
+    for (let ix = 2; ix < week + 1; ix++) {
       log(ix + config.apiList.getWeekData.keyName + 'starting')
-      this.getWeekData(ix)
+      await this.getWeekData(ix)
     }
-    for (let ix = 1; ix < moon + 1; ix++) {
+    for (let ix = 2; ix < moon + 1; ix++) {
       log(ix + config.apiList.getMoonData.keyName + 'starting')
-      this.getMoonData(ix)
+      await this.getMoonData(ix)
     }
     await this.getdimission()
     await this.getemployee(this.cooldata.dimissionList, this.cooldata.employee)
