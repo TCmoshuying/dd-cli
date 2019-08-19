@@ -1,4 +1,5 @@
 import * as fs from 'fs'
+import axios from 'axios'
 const { log } = console
 export const getDoubleIndex = (arr: { [x: string]: any; }, start: number, end: number) => {
   const temp = []
@@ -8,6 +9,29 @@ export const getDoubleIndex = (arr: { [x: string]: any; }, start: number, end: n
     temp.push(element)
   }
   return temp
+}
+// 警告 奇怪的初始值
+const getHoliday = async (year: number) => {
+  let holidayData = {}
+  const { data } = await axios.get('http://tool.bitefu.net/jiari/?d=' + year)
+  holidayData = data[year]
+  for (let ix = 1; ix < 13; ix++) {
+    time(year, ix)
+  }
+  function time(year: any, month: any) {
+    const tempTime = new Date(year, month, 0)
+    const time = new Date()
+    for (let i = 1; i <= tempTime.getDate(); i++) {
+      time.setFullYear(year, month - 1, i)
+      const day = time.getDay()
+      if (day === 6) {
+        holidayData[(month < 10 ? '0' + month : month) + (i < 10 ? '0' + i : i)] = 6
+      } else if (day === 0) {
+        holidayData[(month < 10 ? '0' + month : month) + (i < 10 ? '0' + i : i)] = 7
+      }
+    }
+  }
+  return holidayData
 }
 export const delDir = (path) => {
   let files = []

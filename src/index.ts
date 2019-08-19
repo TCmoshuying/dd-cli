@@ -17,6 +17,7 @@ class DDdata {
   private AccessToken: string
   public data = {userIdList: [], employee: []}
   public cooldata = {dimissionList: [], employee: []}
+  public holidayData = {}
   /**
    * 构建主要参数
    * @param {string} appKey
@@ -36,11 +37,14 @@ class DDdata {
     try {
       this.job(5)
       this.getAccessTonken()
+
+      await this.getHoliday()
       await this.getToken()
       await this.getStatusList()
       await this.getemployee()
       await this.getWeekData()
       await this.getMoonData()
+
       for (let ix = 2; ix < week + 1; ix++) {
       log(ix + config.apiList.getWeekData.keyName + 'starting')
       await this.getWeekData(ix)
@@ -282,15 +286,16 @@ class DDdata {
           Lname.name = '未知人员或已离职人员'
           Lname.branch = '未知人员或已离职人员'
         }
-        const dataStr = new Date(el.baseCheckTime).toLocaleDateString()
-        const holiday = await axios.get('http://api.goseek.cn/Tools/holiday?date=' + dataStr)
+        const checkDate = new Date(el.baseCheckTime).toJSON().substring(5, 10).split('-')
+        const month = Number(checkDate[0]) < 10 ? '0' + Number(checkDate[0]) : Number(checkDate[0])
+        const day = Number(checkDate[1]) < 10 ? '0' + Number(checkDate[1]) : '' + Number(checkDate[1])
         let temp = {
           name: Lname.name,
           userId: el.userId,
           branch: Lname.branch,
           checkType: el.checkType,
           timeResult: el.timeResult,
-          workDay: holiday.data.data,
+          workDay: this.holidayData[month + day] === undefined ? '0' : this.holidayData[month + day],
           sortTime: el.userCheckTime,
           baseCheckTime: el.baseCheckTime,
           locationResult: el.locationResult,
@@ -379,6 +384,31 @@ class DDdata {
     return temp
   }
 
+  async getHoliday(year?: number) {
+    year = year || Number(new Moment().format('YYYY').toString())
+    let Ltemp = {}
+    const { data } = await axios.get('http://tool.bitefu.net/jiari/?d=' + year)
+    Ltemp = data[year]
+    for (let ix = 1; ix < 13; ix++) {
+      time(year, ix)
+    }
+    function time(year: any, month: any) {
+      const tempTime = new Date(year, month, 0)
+      const time = new Date()
+      for (let i = 1; i <= tempTime.getDate(); i++) {
+        time.setFullYear(year, month - 1, i)
+        const day = time.getDay()
+        if (day === 6) {
+          Ltemp[(month < 10 ? '0' + month : month) + (i < 10 ? '0' + i : i)] = 6
+        } else if (day === 0) {
+          Ltemp[(month < 10 ? '0' + month : month) + (i < 10 ? '0' + i : i)] = 7
+        }
+      }
+    }
+    log('Holiday done')
+    this.holidayData = Ltemp
+    return Ltemp
+  }
   destroy() {
     return null
   }
