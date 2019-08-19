@@ -15,8 +15,8 @@ class DDdata {
   public daliyData = []
   private Secret: string
   private AccessToken: string
-  public data = {userIdList: [], employee: []}
-  public cooldata = {dimissionList: [], employee: []}
+  public data = { userIdList: [], employee: [] }
+  public cooldata = { dimissionList: [], employee: [] }
   public holidayData = {}
   /**
    * 构建主要参数
@@ -42,17 +42,15 @@ class DDdata {
       await this.getToken()
       await this.getStatusList()
       await this.getemployee()
-      await this.getWeekData()
-      await this.getMoonData()
 
-      for (let ix = 2; ix < week + 1; ix++) {
-      log(ix + config.apiList.getWeekData.keyName + 'starting')
-      await this.getWeekData(ix)
-    }
-      for (let ix = 2; ix < moon + 1; ix++) {
-      log(ix + config.apiList.getMoonData.keyName + 'starting')
-      await this.getMoonData(ix)
-    }
+      for (let ix = 0; ix < week; ix++) {
+        log(ix + config.apiList.getWeekData.keyName + 'starting')
+        this.getWeekData(1, ix)
+      }
+      for (let ix = 0; ix < moon; ix++) {
+        log(ix + config.apiList.getMoonData.keyName + 'starting')
+        this.getMoonData(1, ix)
+      }
       await this.getdimission()
       await this.getemployee(this.cooldata.dimissionList, this.cooldata.employee)
     } catch (e) {
@@ -185,15 +183,16 @@ class DDdata {
     log(config.apiList.gettoDayData.keyName, config.functiondone)
     return Ltemp
   }
-/**
- * 返回上num周的数据,不传数据默认获取上周在职员工的打卡数据(不会解析离职员工信息,返回'已离职')
- * @param num 获取上num周的数据,传或不传为上周数据,传2位上第二周数据
- * @param offsetis 分页值
- * @param limitis 分页数据大小
- * @param list 员工id:名字信息表
- * @param token 秘钥
- */
-  async getWeekData(num?: number, offsetis?: number, limitis?: number, list?: any[], token?: string) {
+  /**
+   * 返回上num周的数据,不传数据默认获取上周在职员工的打卡数据(不会解析离职员工信息,返回'已离职')
+   * @param num 获取上num周的数据默认为1,传或不传为上周数据,传2位上第二周数据
+   * @param ix 暂存下标
+   * @param offsetis 分页值
+   * @param limitis 分页数据大小
+   * @param list 员工id:名字信息表
+   * @param token 秘钥
+   */
+  async getWeekData(num?: number, ix?: number, offsetis?: number, limitis?: number, list?: any[], token?: string) {
     num = num || 1
     limitis = limitis || 50
     offsetis = offsetis || 0
@@ -205,20 +204,21 @@ class DDdata {
     const time2 = '' + lastWeek2 + ' 23:59:59'
     let Ltemp = []
     Ltemp = await this.getKaoqingLists(list, this.data.employee, time1, time2, offsetis, limitis)
-    this.weekdata[num] = Ltemp
+    this.weekdata[ix] = Ltemp
     // log(JSON.stringify(this.weekdata))
-    log(config.apiList.getWeekData.keyName, num, config.functiondone)
+    log(config.apiList.getWeekData.keyName, num, ix, config.functiondone)
     return Ltemp
   }
   /**
    * 返回上num月的数据,不传数据默认获取上月在职员工的打卡数据(不会解析离职员工信息,返回'已离职')
-   * @param num 获取上num月的数据,传或不传为上月数据,传2位上第二月数据
+   * @param num 获取上num月的数据,默认为1,传或不传为上月数据,传2位上第二月数据
+   * @param ix 暂存下标
    * @param offsetis 分页值
    * @param limitis 分页数据大小
    * @param list 员工id:名字信息表
    * @param token 秘钥
    */
-  async getMoonData(num?: number, offsetis?: number, limitis?: number, list?: any[], token?: string) {
+  async getMoonData(num?: number, ix?: number, offsetis?: number, limitis?: number, list?: any[], token?: string) {
     const day = 1
     num = num || 1
     const Ltemp = []
@@ -239,8 +239,8 @@ class DDdata {
       time1 = null
       temp = null
     }
-    this.moondata[num] = Ltemp
-    log(config.apiList.getMoonData.keyName, num, config.functiondone)
+    this.moondata[ix] = Ltemp
+    log(config.apiList.getMoonData.keyName, num, ix, config.functiondone)
     return Ltemp
   }
   /**
@@ -264,7 +264,7 @@ class DDdata {
     token = token || this.AccessToken
     apiUrl = apiUrl || config.apiList.getKaoqingLists.url
     while (true) {
-      const {data} = await axios({
+      const { data } = await axios({
         method: 'post',
         url: `${mainUrl}${apiUrl}${token}`,
         data: {
@@ -282,7 +282,7 @@ class DDdata {
             return { name: Lelement.name, branch: Lelement.branch }
           }
         })
-        if (Lname.name === undefined ) {
+        if (Lname.name === undefined) {
           Lname.name = '未知人员或已离职人员'
           Lname.branch = '未知人员或已离职人员'
         }
@@ -337,8 +337,8 @@ class DDdata {
       if (data.access_token) {
         log(`access_token is updata`)
       } else {
-         throw new Error('秘钥请求失败, 请检查秘钥或网络')
-        }
+        throw new Error('秘钥请求失败, 请检查秘钥或网络')
+      }
       this.AccessToken = data.access_token
       return data
     }, (2 * 60 * 60 * 1000) - 5000)
