@@ -45,11 +45,11 @@ class DDdata {
 
       for (let ix = 0; ix < week; ix++) {
         log(ix + config.apiList.getWeekData.keyName + 'starting')
-        this.getWeekData(1, ix)
+        this.getWeekData(ix + 1, ix)
       }
       for (let ix = 0; ix < moon; ix++) {
         log(ix + config.apiList.getMoonData.keyName + 'starting')
-        this.getMoonData(1, ix)
+        this.getMoonData(ix + 1, ix)
       }
       await this.getdimission()
       await this.getemployee(this.cooldata.dimissionList, this.cooldata.employee)
@@ -234,7 +234,7 @@ class DDdata {
       let time1 = new Moment([year, month, day]).format('YYYY-MM-DD') + ' 00:00:00'
       let time2 = new Moment([year, month, day]).add(1, 'days').format('YYYY-MM-DD') + ' 23:59:59'
       let temp = await this.getKaoqingLists(list, this.data.employee, time1, time2, offsetis, limitis)
-      Ltemp.push(temp)
+      Ltemp.push.apply(Ltemp, temp)
       time2 = null
       time1 = null
       temp = null
