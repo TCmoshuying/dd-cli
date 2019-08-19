@@ -33,23 +33,27 @@ class DDdata {
    * 启动时刷新数据
    */
   async refreshen(week?: number, moon?: number) {
-    this.job()
-    this.getAccessTonken()
-    await this.getToken()
-    await this.getStatusList()
-    await this.getemployee()
-    await this.getWeekData()
-    await this.getMoonData()
-    for (let ix = 2; ix < week + 1; ix++) {
+    try {
+      this.job(5)
+      this.getAccessTonken()
+      await this.getToken()
+      await this.getStatusList()
+      await this.getemployee()
+      await this.getWeekData()
+      await this.getMoonData()
+      for (let ix = 2; ix < week + 1; ix++) {
       log(ix + config.apiList.getWeekData.keyName + 'starting')
       await this.getWeekData(ix)
     }
-    for (let ix = 2; ix < moon + 1; ix++) {
+      for (let ix = 2; ix < moon + 1; ix++) {
       log(ix + config.apiList.getMoonData.keyName + 'starting')
       await this.getMoonData(ix)
     }
-    await this.getdimission()
-    await this.getemployee(this.cooldata.dimissionList, this.cooldata.employee)
+      await this.getdimission()
+      await this.getemployee(this.cooldata.dimissionList, this.cooldata.employee)
+    } catch (e) {
+      log(e)
+    }
   }
   /**
    * 不传参时,默认以最高速度获取在职员工id信息
@@ -335,9 +339,10 @@ class DDdata {
     }, (2 * 60 * 60 * 1000) - 5000)
   }
 
-  async job() {
+  async job(num?: number) {
+    num = num || 1
     // tslint:disable-next-line: no-unused-expression
-    new CronJob('*/1 * * * *', async () => {
+    new CronJob(`*/${num} * * * *`, async () => {
       // 每分钟更新日数据
       await this.gettoDayData()
     }, null, true, 'Asia/Shanghai')
