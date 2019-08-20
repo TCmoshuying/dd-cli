@@ -224,14 +224,15 @@ class DDdata {
    */
   async getMoonData(num?: number, ix?: number, offsetis?: number, limitis?: number, list?: any[], token?: string) {
     const day = 1
-    num = num || 1
+    num = num || 0
     const Ltemp = []
     limitis = limitis || 50
     offsetis = offsetis || 0
     list = list || this.data.userIdList
     token = token || this.AccessToken
-    const year = new Moment().format('YYYY').toString()
-    const month = Number(new Moment().format('MM').toString()) - num - 1
+    const today = new Date()
+    const year = today.getFullYear()
+    const month =  today.getMonth() - num
     const lastMoon1 = new Moment([year, month, day]).format('YYYY-MM-DD')
     const lastMoonDay = new Moment(lastMoon1).endOf('month').format('DD')
     for (let day = 1; day < Number(lastMoonDay); day++) {
