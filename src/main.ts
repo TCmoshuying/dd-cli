@@ -56,8 +56,8 @@ const router = new Router()
 const dd =  new DDdata(config.appkey, config.appsecret, 3, 2)
 router.get('/', async (ctx: any) => {
   logger.info(ctx.method + ' | ' + 'main' + ' | ' + ctx.ip + ' | ' + ctx.url)
+  // 这里做了一个重定向演示,嘻嘻,暂时用了我自己的博客地址,欢迎访问
   ctx.redirect('https://me.csdn.net/qq_34846662')
-  // ctx.body = null
 })
 
 router.get('/getemployee', (ctx: any) => {

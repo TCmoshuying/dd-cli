@@ -11,6 +11,10 @@ export const getDoubleIndex = (arr: { [x: string]: any; }, start: number, end: n
   return temp
 }
 // 警告 奇怪的初始值
+// const checkDate = new Date(el.baseCheckTime).toJSON().substring(5, 10).split('-')
+// const month = Number(checkDate[0]) < 10 ? '0' + Number(checkDate[0]) : Number(checkDate[0])
+// const day = Number(checkDate[1]) < 10 ? '0' + Number(checkDate[1]) : '' + Number(checkDate[1])
+// this.holidayData[month + day] === undefined ? '0' : this.holidayData[month + day],
 const getHoliday = async (year: number) => {
   let holidayData = {}
   const { data } = await axios.get('http://tool.bitefu.net/jiari/?d=' + year)
@@ -85,4 +89,42 @@ export const getFnName = (callee) => {
   name = str.match(/var([^\=]+?)\=/)
   if (name && name[1]) { return name[1] }
   return 'anonymous'
+}
+
+// 提取json对象下的所有key下的不同value
+const filterValue = (Json, key) => {
+
+}
+
+export const shallowCopy = (src) => {
+  const dst = {}
+  for (const prop in src) {
+    if (src.hasOwnProperty(prop)) {
+      dst[prop] = src[prop]
+    }
+  }
+  return dst
+}
+
+export const deepCopy = (target) => {
+  let copyed_objs = []// 此数组解决了循环引用和相同引用的问题，它存放已经递归到的目标对象
+  function _deepCopy(target) {
+    if ((typeof target !== 'object') || !target) { return target }
+    for (let i = 0; i < copyed_objs.length; i++) {
+      if (copyed_objs[i].target === target) {
+        return copyed_objs[i].copyTarget
+      }
+    }
+    let obj = {}
+    if (Array.isArray(target)) {
+      obj = []// 处理target是数组的情况
+    }
+    copyed_objs.push({ target, copyTarget: obj })
+    Object.keys(target).forEach(key => {
+      if (obj[key]) { return }
+      obj[key] = _deepCopy(target[key])
+    })
+    return obj
+  }
+  return _deepCopy(target)
 }
