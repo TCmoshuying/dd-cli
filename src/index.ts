@@ -1,23 +1,27 @@
+/**
+ * dd-cli
+ */
 import axios from 'axios'
+import config from '../config/config'
 // tslint:disable-next-line: no-var-requires
 const CronJob = require('cron').CronJob
-import config from '../config/config'
 // tslint:disable-next-line: no-var-requires
 const Moment = require('moment')
 
-const { log } = console
 const mainUrl = config.mainUrl
+const { log } = console
 
 class DDdata {
-  private Key: string
   public weekdata = []
   public moondata = []
   public daliyData = []
-  private Secret: string
-  private AccessToken: string
+  public holidayData = {}
   public data = { userIdList: [], employee: [] }
   public cooldata = { dimissionList: [], employee: [] }
-  public holidayData = {}
+
+  private Key: string
+  private Secret: string
+  private AccessToken: string
   /**
    * 构建主要参数
    * @param {string} appKey
