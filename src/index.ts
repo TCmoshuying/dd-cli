@@ -52,7 +52,7 @@ class DDdata {
         this.getMoonData(ix + 1, ix)
       }
       await this.getdimission()
-      await this.getemployee(this.cooldata.dimissionList, this.cooldata.employee)
+      this.cooldata.employee = await this.getemployee(this.cooldata.dimissionList)
     } catch (e) {
       log(e)
     }
@@ -126,14 +126,13 @@ class DDdata {
   /**
    * 不传参时,函数默认调用在职(待离职也算)员工列表,并获取其id,姓名,职位,部门信息
    * @param list 员工id列表
-   * @param redata 返回数据,会被修改
    * @param token 秘钥
    * @returns array 返回员工部门职位,姓名和id信息
    */
-  async getemployee(list?: { [x: string]: any; }, redata?: { [x: string]: any; }, token?: string) {
+  async getemployee(list?: { [x: string]: any; }, token?: string) {
     token = token || this.AccessToken
     list = list || this.data.userIdList
-    redata = redata || this.data.employee
+    const redata = []
     const api = config.apiList.getemployee
     const fieldFilter = api.fieldFilter
     for (let querix = 0; querix >= 0; querix++) {
@@ -159,6 +158,7 @@ class DDdata {
         redata.push(pushData)
       }
     }
+    this.data.employee = redata
     return redata
   }
   /**
@@ -179,7 +179,9 @@ class DDdata {
     const totime = time + ' 23:59:59'
     let Ltemp = []
     Ltemp = await this.getKaoqingLists(list, this.data.employee, fromtime, totime, offsetis, limitis)
-    this.daliyData = Ltemp
+    this.daliyData = Ltemp.sort((item1, item2) => {
+      return item1.name.localeCompare(item2.name, 'zh-CN')
+    })
     log(config.apiList.gettoDayData.keyName, config.functiondone)
     return Ltemp
   }
@@ -204,7 +206,9 @@ class DDdata {
     const time2 = '' + lastWeek2 + ' 23:59:59'
     let Ltemp = []
     Ltemp = await this.getKaoqingLists(list, this.data.employee, time1, time2, offsetis, limitis)
-    this.weekdata[ix] = Ltemp
+    this.weekdata[ix] = Ltemp.sort((item1, item2) => {
+      return item1.name.localeCompare(item2.name, 'zh-CN')
+    })
     // log(JSON.stringify(this.weekdata))
     log(config.apiList.getWeekData.keyName, num, ix, config.functiondone)
     return Ltemp
@@ -239,7 +243,9 @@ class DDdata {
       time1 = null
       temp = null
     }
-    this.moondata[ix] = Ltemp
+    this.moondata[ix] = Ltemp.sort((item1, item2) => {
+      return item1.name.localeCompare(item2.name, 'zh-CN')
+    })
     log(config.apiList.getMoonData.keyName, num, ix, config.functiondone)
     return Ltemp
   }
@@ -363,14 +369,14 @@ class DDdata {
       // 更新每周数据
       await this.getWeekData()
       // 离职员工信息
-      await this.getemployee(this.cooldata.dimissionList, this.cooldata.employee)
+      this.cooldata.employee = await this.getemployee(this.cooldata.dimissionList)
     }, null, true, 'Asia/Shanghai')
     // tslint:disable-next-line: no-unused-expression
     new CronJob('0 0 */31 * *', async () => {
       // 更新每月数据
       await this.getMoonData()
       await this.getdimission()
-      await this.getemployee(this.cooldata.dimissionList, this.cooldata.employee)
+      this.cooldata.employee = await this.getemployee(this.cooldata.dimissionList)
     }, null, true, 'Asia/Shanghai')
   }
 
