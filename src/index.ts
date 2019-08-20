@@ -22,6 +22,8 @@ class DDdata {
    * 构建主要参数
    * @param {string} appKey
    * @param {string} appSecre
+   * @param {number} 周数据缓存大小,默认为1,传0不缓存
+   * @param {number} 月数据缓存大小,默认为1,传0不缓存
    */
   constructor(key: string, Secret: string, week?: number, moon?: number) {
     this.Key = key
@@ -42,7 +44,7 @@ class DDdata {
       await this.getToken()
       await this.getStatusList()
       await this.getemployee()
-
+      this.gettoDayData()
       for (let ix = 0; ix < week; ix++) {
         log(ix + config.apiList.getWeekData.keyName + 'starting')
         this.getWeekData(ix + 1, ix)
@@ -158,7 +160,9 @@ class DDdata {
         redata.push(pushData)
       }
     }
-    this.data.employee = redata
+    if (list.length === this.data.userIdList.length) {
+      this.data.employee = redata
+    }
     return redata
   }
   /**
