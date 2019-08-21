@@ -41,13 +41,12 @@ class DDdata {
    */
   async refreshen(week?: number, moon?: number) {
     try {
-      this.job()
       this.getAccessTonken()
-
       await this.getHoliday()
       await this.getToken()
       await this.getStatusList()
       await this.getemployee()
+      this.job()
       this.gettoDayData()
       for (let ix = 0; ix < week; ix++) {
         log(ix + config.apiList.getWeekData.keyName + 'starting')
@@ -190,7 +189,7 @@ class DDdata {
     this.daliyData = Ltemp.sort((item1, item2) => {
       return item1.name.localeCompare(item2.name, 'zh-CN')
     })
-    log(config.apiList.gettoDayData.keyName, config.functiondone)
+    // log(config.apiList.gettoDayData.keyName, config.functiondone)
     return Ltemp
   }
   /**
@@ -362,10 +361,7 @@ class DDdata {
 
   async job() {
     // tslint:disable-next-line: no-unused-expression
-    new CronJob(`*/1 * * * *`, async () => {
-      // 每分钟更新日数据
-      await this.gettoDayData()
-    }, null, true, 'Asia/Shanghai')
+    setInterval(async () => {await this.gettoDayData()}, 500)
     // tslint:disable-next-line: no-unused-expression
     new CronJob('0 0 */1 * *', async () => {
       // 更新每日数据
