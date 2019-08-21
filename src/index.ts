@@ -29,24 +29,25 @@ class DDdata {
    * @param {number} 周数据缓存大小,默认为1,传0不缓存
    * @param {number} 月数据缓存大小,默认为1,传0不缓存
    */
-  constructor(key: string, Secret: string, week?: number, moon?: number) {
+  constructor(key: string, Secret: string, week?: number, moon?: number, speed?: number) {
     this.Key = key
     this.Secret = Secret
+    speed = speed || 3000
     week = week || 1
     moon = moon || 1
-    this.refreshen(week, moon)
+    this.refreshen(week, moon, speed)
   }
   /**
    * 启动时刷新数据
    */
-  async refreshen(week?: number, moon?: number) {
+  async refreshen(week: number, moon: number, speed: number) {
     try {
       this.getAccessTonken()
       await this.getHoliday()
       await this.getToken()
       await this.getStatusList()
       await this.getemployee()
-      this.job()
+      this.job(speed)
       this.gettoDayData()
       for (let ix = 0; ix < week; ix++) {
         log(ix + config.apiList.getWeekData.keyName + 'starting')
@@ -359,9 +360,9 @@ class DDdata {
     }, (2 * 60 * 60 * 1000) - 5000)
   }
 
-  async job() {
+  async job(speed?: number) {
     // tslint:disable-next-line: no-unused-expression
-    setInterval(async () => {await this.gettoDayData()}, 500)
+    setInterval(async () => {await this.gettoDayData()}, speed)
     // tslint:disable-next-line: no-unused-expression
     new CronJob('0 0 */1 * *', async () => {
       // 更新每日数据
