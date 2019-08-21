@@ -41,7 +41,7 @@ class DDdata {
    */
   async refreshen(week?: number, moon?: number) {
     try {
-      this.job(5)
+      this.job()
       this.getAccessTonken()
 
       await this.getHoliday()
@@ -186,7 +186,7 @@ class DDdata {
     const fromtime = time + ' 00:00:00'
     const totime = time + ' 23:59:59'
     let Ltemp = []
-    Ltemp = await this.getKaoqingLists(list, this.data.employee, fromtime, totime, offsetis, limitis)
+    Ltemp = await this.getKaoqingLists( fromtime, totime, list, this.data.employee, offsetis, limitis)
     this.daliyData = Ltemp.sort((item1, item2) => {
       return item1.name.localeCompare(item2.name, 'zh-CN')
     })
@@ -213,7 +213,7 @@ class DDdata {
     const time1 = '' + lastWeek1 + ' 00:00:00'
     const time2 = '' + lastWeek2 + ' 23:59:59'
     let Ltemp = []
-    Ltemp = await this.getKaoqingLists(list, this.data.employee, time1, time2, offsetis, limitis)
+    Ltemp = await this.getKaoqingLists( time1, time2, list, this.data.employee, offsetis, limitis)
     this.weekdata[ix] = Ltemp.sort((item1, item2) => {
       return item1.name.localeCompare(item2.name, 'zh-CN')
     })
@@ -245,7 +245,7 @@ class DDdata {
     for (let day = 1; day < Number(lastMoonDay); day++) {
       let time1 = new Moment([year, month, day]).format('YYYY-MM-DD') + ' 00:00:00'
       let time2 = new Moment([year, month, day]).add(1, 'days').format('YYYY-MM-DD') + ' 23:59:59'
-      let temp = await this.getKaoqingLists(list, this.data.employee, time1, time2, offsetis, limitis)
+      let temp = await this.getKaoqingLists(time1, time2, list, this.data.employee, offsetis, limitis)
       Ltemp.push.apply(Ltemp, temp)
       time2 = null
       time1 = null
@@ -269,10 +269,12 @@ class DDdata {
    * @param start 用户id列表的查询起始值,默认从0开始
    * @param token 秘钥
    */
-  async getKaoqingLists(useridList: any, employeeList: any[], time1: string, time2: string,
-                        offsetis?: number, limitis?: number, apiUrl?: string, start?: number, token?: string) {
+  async getKaoqingLists( time1: string, time2: string, useridList?: any[], employeeList?: any[],
+                         offsetis?: number, limitis?: number, apiUrl?: string, start?: number, token?: string) {
     const Ltemp = []
     start = start || 0
+    useridList = useridList || this.data.userIdList
+    employeeList = employeeList || this.data.employee
     limitis = limitis || 50
     offsetis = offsetis || 0
     token = token || this.AccessToken
@@ -358,10 +360,9 @@ class DDdata {
     }, (2 * 60 * 60 * 1000) - 5000)
   }
 
-  async job(num?: number) {
-    num = num || 1
+  async job() {
     // tslint:disable-next-line: no-unused-expression
-    new CronJob(`*/${num} * * * *`, async () => {
+    new CronJob(`*/1 * * * *`, async () => {
       // 每分钟更新日数据
       await this.gettoDayData()
     }, null, true, 'Asia/Shanghai')
@@ -400,9 +401,14 @@ class DDdata {
 
   async getHoliday(year?: number) {
     year = year || Number(new Moment().format('YYYY').toString())
-    let Ltemp = {}
-    const { data } = await axios.get('http://tool.bitefu.net/jiari/?d=' + year)
-    Ltemp = data[year]
+    const Ltemp = {
+      20190913: 1,
+      20191001: 1,
+      20191002: 1,
+      20191003: 1
+    }
+    // const { data } = await axios.get('http://tool.bitefu.net/jiari/?d=' + year)
+    // Ltemp = data[year]
     for (let ix = 1; ix < 13; ix++) {
       time(year, ix)
     }
