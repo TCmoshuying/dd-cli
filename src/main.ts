@@ -55,7 +55,7 @@ app.use(async (ctx, next) => {
   await next()
 })
 const router = new Router()
-const dd =  new DDdata(config.appkey, config.appsecret, 0, 0)
+const dd =  new DDdata(config.appkey, config.appsecret, 4, 2)
 router.get('/', async (ctx: any) => {
   logger.info(ctx.method + ' | ' + 'main' + ' | ' + ctx.ip + ' | ' + ctx.url)
   // 这里做了一个重定向演示,嘻嘻,暂时用了我自己的博客地址,欢迎访问
