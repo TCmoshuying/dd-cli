@@ -16,8 +16,8 @@ log4js.configure({
 })
 const logger = log4js.getLogger()
 
-import DDdata from './index'
-import config from '../config/config'
+import DDdata from 'ddinit'
+import config from '../config/min'
 
 const app = new Koa()
 app.use(bodyParser())
