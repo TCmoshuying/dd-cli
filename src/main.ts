@@ -91,10 +91,10 @@ router.post('/postMoonData', async (ctx: any) => {
   }
 })
 
-router.post('/postAnyTimeData', async (ctx: any) => {
-  logger.info(ctx.method + ' | ' + 'postAnyTimeData' + ' | '  + ctx.ip + ' | ' + ctx.url + ' | ' + JSON.stringify(ctx.request.body))
-  const time1 = ctx.request.body.time1
-  const time2 = ctx.request.body.time2
+router.get('/getAnyTimeData', async (ctx: any) => {
+  logger.info(ctx.method + ' | ' + 'getAnyTimeData' + ' | '  + ctx.ip + ' | ' + ctx.url + ' | ' + JSON.stringify(ctx.request.query))
+  const time1 = ctx.request.query.time1
+  const time2 = ctx.request.query.time2
   const pat = /([0-9]{4})\-([0-1][0-9])\-([0-9]{2})[ \f\n\r\t\v]([0-2][0-9])\:([0-6][0-9])\:([0-6][0-9])/g
   const pat2 = /([0-9]{4})\-([0-1][0-9])\-([0-9]{2})[ \f\n\r\t\v]([0-2][0-9])\:([0-6][0-9])\:([0-6][0-9])/i
   if (time1 > time2) {
