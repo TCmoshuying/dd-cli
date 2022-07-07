@@ -16,7 +16,7 @@
     "cron": "^1.7.1",
     "koa-bodyparser": "^4.2.1",
     "log4js": "^5.0.0",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "redis": "^2.8.0"
   },
   "devDependencies": {
